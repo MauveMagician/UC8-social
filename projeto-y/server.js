@@ -38,9 +38,10 @@ app
 
     // Sign up route
     server.post("/api/auth/signup", async (req, res) => {
-      const { email, password } = req.body;
+      console.log(req.body);
+      const { email, senha, nome } = req.body;
 
-      if (!email || !password) {
+      if (!email || !senha) {
         return res
           .status(400)
           .json({ message: "Email and password are required" });
@@ -64,11 +65,11 @@ app
           return res.status(422).json({ message: "User already exists" });
         }
 
-        const hashedPassword = await hashPassword(password);
+        const hashedPassword = await hashPassword(senha);
 
         await connection.execute(
-          "INSERT INTO users (email, password) VALUES (?, ?)",
-          [email, hashedPassword]
+          "INSERT INTO users (email, password, nome) VALUES (?, ?, ?)",
+          [email, hashedPassword, nome]
         );
 
         connection.end();
