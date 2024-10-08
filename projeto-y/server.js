@@ -38,7 +38,6 @@ app
 
     // Sign up route
     server.post("/api/auth/signup", async (req, res) => {
-      console.log(req.body);
       const { email, senha, nome } = req.body;
 
       if (!email || !senha) {
@@ -77,6 +76,58 @@ app
       } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
+    server.post("/api/auth/login", async (req, res) => {
+      const { email, senha } = req.body;
+
+      if (!email || !senha) {
+        return res
+          .status(400)
+          .json({ message: "Email and password are required" });
+      }
+
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        const [user] = await connection.execute(
+          "SELECT * FROM users WHERE email = ?",
+          [email]
+        );
+
+        if (user.length === 0) {
+          connection.end();
+          return res.status(401).json({ message: "Invalid email or password" });
+        }
+
+        const isValid = await verifyPassword(senha, user[0].password);
+
+        if (!isValid) {
+          connection.end();
+          return res.status(401).json({ message: "Invalid email or password" });
+        }
+
+        // Optionally, set up a session or token here
+        req.session.user = { id: user[0].id, email: user[0].email };
+        connection.end();
+        res.status(200).json({ message: "Login successful" });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
+    server.get("/api/auth/session", (req, res) => {
+      if (req.session.user) {
+        res.status(200).json({ user: req.session.user });
+      } else {
+        res.status(401).json({ message: "Not authenticated" });
       }
     });
 

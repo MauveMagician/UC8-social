@@ -1,6 +1,7 @@
 import styles from "./login.module.css";
 import { useState } from "react";
 import CriarConta from "@/app/criarConta";
+import { useRouter } from "next/router";
 
 export default function Login({ setRenderLog }) {
   const [account, setAccount] = useState(false);
@@ -10,16 +11,17 @@ export default function Login({ setRenderLog }) {
   const handleSignUp = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("/api/auth/signup", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, senha, nome }),
+        body: JSON.stringify({ email, senha }),
       });
       const data = await response.json();
       if (response.ok) {
         alert("Bem-vindo");
+        window.location.reload();
       } else {
         alert(data.message);
       }
