@@ -2,7 +2,6 @@ const express = require("express");
 const next = require("next");
 const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
-const { NextAuthHandler } = require("next-auth/express");
 const mysql = require("mysql2/promise");
 const { verifyPassword, hashPassword } = require("./src/lib/auth");
 
@@ -79,58 +78,6 @@ app
         res.status(500).json({ message: "Internal server error" });
       }
     });
-
-    // Set up NextAuth
-    server.use(
-      "/api/auth",
-      NextAuthHandler({
-        providers: [
-          {
-            id: "credentials",
-            name: "Credentials",
-            type: "credentials",
-            authorize: async (credentials) => {
-              const connection = await mysql.createConnection({
-                host: process.env.DB_HOST,
-                user: process.env.DB_USER,
-                password: process.env.DB_PASSWORD,
-                database: process.env.DB_NAME,
-              });
-
-              const [rows] = await connection.execute(
-                "SELECT * FROM users WHERE email = ?",
-                [credentials.email]
-              );
-
-              if (rows.length === 0) {
-                connection.end();
-                throw new Error("No user found!");
-              }
-
-              const user = rows[0];
-
-              const isValid = await verifyPassword(
-                credentials.password,
-                user.password
-              );
-
-              if (!isValid) {
-                connection.end();
-                throw new Error("Could not log you in!");
-              }
-
-              connection.end();
-              return { email: user.email };
-            },
-          },
-        ],
-        database: process.env.DATABASE_URL,
-        secret: process.env.NEXTAUTH_SECRET,
-        session: {
-          jwt: true,
-        },
-      })
-    );
 
     // Handle all other routes with Next.js
     server.all("*", (req, res) => {
