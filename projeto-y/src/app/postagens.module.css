@@ -1,79 +1,108 @@
 .container {
-  width: 97vw;
-  height: 50vw;
+  width: 90vw;
+  height: auto;
   display: grid;
-  grid-template-columns: 1fr 10fr;
-  grid-template-rows: 1fr;
+  grid-template-columns: 32px 3fr 0.5fr;
+  grid-template-rows: 32px 1fr 0.5fr;
   grid-template-areas:
-    "a b b b"
-    "a b b b"
-    "a b b b";
-  border: SOLID black 1px;
-  font-size: 1rem;
+    "a b b"
+    "c c c"
+    "d d d";
+  margin-bottom: 0.25rem;
 }
-.container2 {
-  grid-area: b;
-  height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-}
+
 .avatar {
-  background-color: aqua;
-  height: 100%;
-  width: 100%;
   grid-area: a;
   display: flex;
   justify-content: center;
   justify-items: center;
-}
-.bola {
-  height: 7vw;
-  width: 7vw;
-  border-radius: 50%;
-  background: black;
-}
-.perfil {
-  background-color: blue;
-  height: 15%;
-  width: 100%;
-  display: flex;
-}
-.name {
-  background-color: red;
-  height: 100%;
-  width: 80%;
-}
-.nomedousuario {
-  height: 50%;
-  width: 100%;
-  background: violet;
-}
-.arrobausuario {
-  height: 50%;
-  width: 100%;
-  background: yellow;
-}
-.seguir {
-  background-color: aqua;
-  height: 100%;
-  width: 20%;
-  display: flex;
   flex-direction: column;
+}
+
+.bolapai {
+  display: flex;
   justify-content: center;
   align-items: center;
+  background-color: lightcoral;
+  width: 100%;
+  height: 100%;
 }
+
+.bola {
+  width: 100%;
+  height: 100%;
+  background: black;
+}
+
+.fantasma {
+  width: 100%;
+}
+
+.points {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: auto;
+}
+
+.points img {
+  width: 7.5vw;
+  height: 7.5vw;
+  margin-left: auto;
+}
+
+.perfil {
+  display: flex;
+  grid-area: b;
+}
+
+.name {
+  width: 100%;
+  padding-left: 0.25rem;
+}
+
+.nomedousuario {
+  width: 100%;
+  font-weight: bolder;
+  font-family: "Open Sans", sans-serif;
+}
+
+.arrobausuario {
+  width: 100%;
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.75rem;
+  color: #888;
+}
+
 .p {
-  margin: 0px;
-  padding: 0px;
+  margin: 0;
+  padding: 0;
 }
+
 .Mensagem {
-  height: 65%;
-  width: 100%;
-  background-color: yellowgreen;
+  font-size: 0.9rem;
+  font-family: "Open Sans", sans-serif;
+  margin: 5px;
+  grid-area: c;
 }
+
 .interaction {
-  height: 20%;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  grid-area: d;
+}
+
+.svg {
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  width: 6vw;
+  height: 6vw;
+}
+
+.img {
+  width: auto;
   width: 100%;
-  background-color: green;
+  height: 100%;
 }
