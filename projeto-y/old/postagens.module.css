@@ -1,0 +1,121 @@
+.container {
+  width: 97vw;
+  height: 50vw;
+  display: grid;
+  grid-template-columns: 1fr 7fr;
+  grid-template-rows: 1fr;
+  grid-template-areas:
+    "a b b b"
+    "a b b b"
+    "a b b b";
+
+  font-size: 1rem;
+}
+.container2 {
+  grid-area: b;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: lightblue;
+}
+.avatar {
+  height: 100%;
+  width: 100%;
+  grid-area: a;
+  display: flex;
+  justify-content: center;
+  justify-items: center;
+  flex-direction: column;
+  background-color: lightgreen;
+}
+.bolapai {
+  height: 20%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: aqua;
+}
+.bola {
+  height: 10vw;
+  width: 10vw;
+  border-radius: 50%;
+  background: black;
+}
+.fantasma {
+  height: 80%;
+  width: 100%;
+}
+.points {
+  height: 100%;
+  width: 20%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.perfil {
+  height: 20%;
+  width: 100%;
+  display: flex;
+  border-bottom: 0.1px solid #696969;
+}
+.name {
+  height: 100%;
+  width: 45%;
+}
+.nomedousuario {
+  height: 50%;
+  width: 100%;
+}
+.arrobausuario {
+  height: 50%;
+  width: 100%;
+}
+.data {
+  height: 100%;
+  width: 15%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.seguir {
+  height: 100%;
+  width: 20%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.p {
+  margin: 0px;
+  padding: 0px;
+}
+.Mensagem {
+  height: 60%;
+  width: 100%;
+  font-size: 1.25rem;
+  font-family: "Open Sans", sans-serif;
+}
+.interaction {
+  height: 20%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-top: 0.1px solid #696969; /* Define a borda na parte de cima */
+}
+
+.svg {
+  height: 95%; /* Ajuste conforme necessário */
+  width: 25%; /* Mantenha a proporção do SVG */
+  justify-content: center; /* Alinha horizontalmente */
+  align-items: center; /* Alinha verticalmente */
+  display: flex;
+}
+
+.img {
+  height: 80%;
+  width: auto; /* Mantenha a proporção da imagem */
+}
