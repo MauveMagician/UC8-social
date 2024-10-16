@@ -9,6 +9,32 @@ const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
+const fetchIdBySession = async (req) => {
+  const sessionId = req.sessionID; // Get the session ID
+
+  const connection = await mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+  });
+
+  // Fetch the session data from the sessions table
+  const [rows] = await connection.execute(
+    "SELECT data FROM sessions WHERE session_id = ?",
+    [sessionId]
+  );
+
+  const sessionData = JSON.parse(rows[0].data);
+  const email = sessionData.user ? sessionData.user.email : null;
+  const [rows2] = await connection.execute(
+    "SELECT user_id FROM users WHERE email = ?",
+    [email]
+  );
+  connection.end();
+  return rows2[0].user_id;
+};
+
 const fs = require("fs");
 const path = require("path");
 
@@ -120,6 +146,31 @@ app
         req.session.user = { id: user[0].id, email: user[0].email };
         connection.end();
         res.status(200).json({ message: "Login successful" });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
+    server.post("/api/data/post", async (req, res) => {
+      const { content } = req.body;
+      if (!req.session.user) {
+        res.status(401).json({ message: "Not authenticated" });
+      }
+      const user_id = await fetchIdBySession(req);
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+        await connection.execute(
+          "INSERT INTO posts (user_id, content) VALUES (?, ?)",
+          [user_id, content]
+        );
+        connection.end();
+        res.status(201).json({ message: "Post is successful" });
       } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Internal server error" });
