@@ -8,12 +8,14 @@ import { DarkModeContextProvider } from "./context/DarkModeContext";
 export default function Home() {
   return (
     <>
-      <MenuSuperior />
-      <Postagem />
-      <Postagem />
-      <Postagem />
-      <Postagem />
-      <MenuInferior />
+      <DarkModeContextProvider>
+        <MenuSuperior />
+        <Postagem />
+        <Postagem />
+        <Postagem />
+        <Postagem />
+        <MenuInferior />
+      </DarkModeContextProvider>
     </>
   );
 }
