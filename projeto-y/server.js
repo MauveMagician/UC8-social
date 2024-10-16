@@ -35,6 +35,9 @@ const fetchIdBySession = async (req) => {
   return rows2[0].user_id;
 };
 
+const fs = require("fs");
+const path = require("path");
+
 app
   .prepare()
   .then(() => {
@@ -173,7 +176,41 @@ app
         res.status(500).json({ message: "Internal server error" });
       }
     });
+    server.get("/api/data/pfp", async (req, res) => {
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
 
+        const [pfp] = await connection.execute(
+          "SELECT pfp.photo FROM pfp WHERE pfp.user_id =?",
+          [req.query.user_id]
+        );
+
+        connection.end();
+
+        if (pfp.length === 0) {
+          return res.status(404).json({ message: "Photo not found" });
+        }
+
+        const photoPath = pfp[0].photo; // Assuming this is the path to the image file
+        const absolutePath = path.resolve(photoPath);
+
+        // Check if the file exists
+        if (!fs.existsSync(absolutePath)) {
+          return res.status(404).json({ message: "File not found" });
+        }
+
+        // Send the file
+        res.sendFile(absolutePath);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
     server.get("/api/auth/session", (req, res) => {
       if (req.session.user) {
         res.status(200).json({ user: req.session.user });

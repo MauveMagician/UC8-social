@@ -18,26 +18,6 @@
   justify-items: center;
   flex-direction: column;
 }
-
-.bolapai {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: lightcoral;
-  width: 100%;
-  height: 100%;
-}
-
-.bola {
-  width: 100%;
-  height: 100%;
-  background: black;
-}
-
-.fantasma {
-  width: 100%;
-}
-
 .points {
   display: flex;
   justify-content: center;
@@ -105,4 +85,10 @@
   width: auto;
   width: 100%;
   height: 100%;
+}
+.foto {
+  width: 100%;
+  height: 100%;
+  padding: 0px;
+  margin: 0px;
 }
