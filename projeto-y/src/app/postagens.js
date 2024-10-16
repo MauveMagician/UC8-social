@@ -1,14 +1,13 @@
 "use client";
 import Image from "next/image";
 import styles from "./postagens.module.css";
+import FotoPerfil from "./fotoperfil";
 
 export default function Postagem() {
   return (
     <div className={styles.container}>
       <div className={styles.avatar}>
-        <div className={styles.bolapai}>
-          <div className={styles.bola}></div>
-        </div>
+        <FotoPerfil user_id={1} className={styles.foto} />
       </div>
       <div className={styles.perfil}>
         <div className={styles.name}>
