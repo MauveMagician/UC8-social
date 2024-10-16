@@ -4,15 +4,13 @@ import MenuSuperior from "./menuSuperior";
 import MenuInferior from "./menuInferior";
 import Postagem from "./postagens";
 import Conta from "./conta";
+import Timeline from "./timeline";
 
 export default function Home() {
   return (
     <>
       <MenuSuperior />
-      <Postagem />
-      <Postagem />
-      <Postagem />
-      <Postagem />
+      <Timeline />
       <MenuInferior />
     </>
   );
