@@ -1,11 +1,11 @@
 "use client";
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useContext } from "react";
 
 // Create the context
-const DarkModeContext = createContext();
+export const DarkModeContext = createContext();
 
 // Create the provider component
-const DarkModeContextProvider = ({ children }) => {
+export const DarkModeContextProvider = ({ children }) => {
   useEffect(() => {
     // Check local storage for dark mode preference
     const storedPreference = localStorage.getItem("darkMode");
@@ -28,5 +28,4 @@ const DarkModeContextProvider = ({ children }) => {
   );
 };
 
-// Export both the context and provider
-export { DarkModeContextProvider, DarkModeContext };
+export const useDarkMode = () => useContext(DarkModeContext);
