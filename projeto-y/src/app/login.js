@@ -2,8 +2,10 @@ import styles from "./login.module.css";
 import { useState } from "react";
 import CriarConta from "@/app/criarConta";
 import { useRouter } from "next/router";
+import { useDarkMode } from "@/app/context/DarkModeContext";
 
 export default function Login({ setRenderLog }) {
+  const { dark, setDark } = useDarkMode();
   const [account, setAccount] = useState(false);
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -32,17 +34,19 @@ export default function Login({ setRenderLog }) {
   return (
     <>
       {account ? <CriarConta setAccount={setAccount} /> : <></>}
-      <div className={styles.container}>
+      <div className={`${styles.container} ${dark ? styles.dark : ""}`}>
         <div className={styles.pato}>
-          <img src="/pato.svg"></img>
+          <img src={dark ? "/pato-dark.svg" : "/pato.svg"}></img>
         </div>
         <div className={styles.close}>
           <button className={styles.fechar} onClick={() => setRenderLog(false)}>
-            <img src="/closebutton.svg"></img>
+            <img
+              src={dark ? "/closebutton-dark.svg" : "/closebutton.svg"}
+            ></img>
           </button>
         </div>
         <form onSubmit={handleSignUp} className={styles.containerfilho}>
-          <p>Email de usuário</p>
+          <p className={`${dark ? styles.dark2 : ""}`}>Email de usuário</p>
           <input
             type="email"
             placeholder="Digite seu email"
@@ -50,7 +54,7 @@ export default function Login({ setRenderLog }) {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-          <p>Senha</p>
+          <p className={`${dark ? styles.dark2 : ""}`}>Senha</p>
           <input
             type="password"
             placeholder="Digite sua senha"
@@ -59,15 +63,20 @@ export default function Login({ setRenderLog }) {
             required
           />
           <div className={styles.botao}>
-            <button type="submit" className={styles.entrarbutton}>
+            <button
+              type="submit"
+              className={`${styles.entrarbutton} ${
+                dark ? styles.whitebutton : ""
+              }`}
+            >
               Entrar
             </button>
           </div>
         </form>
-        <div className={styles.cadastro}>
+        <div className={`${styles.cadastro} ${dark ? styles.dark2 : ""}`}>
           Não tem uma conta?
           <span
-            className={styles.conta}
+            className={`${dark ? styles.dark3 : styles.conta}`}
             onClick={() => {
               setAccount(true);
             }}

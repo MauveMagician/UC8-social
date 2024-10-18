@@ -15,6 +15,20 @@
   z-index: 10;
 }
 
+.dark {
+  background-color: #111;
+}
+
+.dark2 {
+  color: white;
+}
+
+.dark3 {
+  color: white;
+  text-decoration: underline;
+  font-weight: bolder;
+}
+
 .pato img {
   width: 5rem;
   height: 5rem;
@@ -52,6 +66,12 @@
   background-color: black;
   margin-top: 1rem;
   border: none;
+}
+
+.whitebutton {
+  color: black;
+  background-color: white;
+  font-weight: 600;
 }
 
 .input1 {

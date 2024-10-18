@@ -9,15 +9,15 @@ export default function MenuSuperior() {
     setDark(!dark);
   };
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${dark ? styles.dark : ""}`}>
       <button className={styles.cor} onClick={handleDarkModeToggle}>
-        <img src={dark ? "lua-dark.svg" : "/lua.svg"}></img>
+        <img src={dark ? "/lua-dark.svg" : "/lua.svg"}></img>
       </button>
       <button className={styles.logo}>
-        <img src="/pato.svg"></img>
+        <img src={dark ? "/pato-dark.svg" : "/pato.svg"}></img>
       </button>
       <button className={styles.sininho}>
-        <img src="/sino.svg"></img>
+        <img src={dark ? "/sino-dark.svg" : "/sino.svg"}></img>
       </button>
     </div>
   );

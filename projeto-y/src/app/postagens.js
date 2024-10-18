@@ -1,10 +1,12 @@
 "use client";
 import Image from "next/image";
 import styles from "./postagens.module.css";
+import { useDarkMode } from "@/app/context/DarkModeContext";
 
 export default function Postagem() {
+  const { dark } = useDarkMode();
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${dark ? styles.dark : ""}`}>
       <div className={styles.avatar}>
         <div className={styles.bolapai}>
           <div className={styles.bola}></div>
@@ -18,7 +20,7 @@ export default function Postagem() {
         <div className={styles.points}>
           <img
             className={styles.img}
-            src="/ellipsis-svgrepo-com.svg"
+            src={dark ? "/ellipsis-dark.svg" : "/ellipsis-svgrepo-com.svg"}
             alt="Salvar"
           />
         </div>
@@ -31,14 +33,16 @@ export default function Postagem() {
         <div className={styles.svg}>
           <img
             className={styles.img}
-            src="/retweet-svgrepo-com.svg"
+            src={dark ? "/retweet-dark.svg" : "/retweet-svgrepo-com.svg"}
             alt="Republicar"
           />
         </div>
         <div className={styles.svg}>
           <img
             className={styles.img}
-            src="/heart-like-svgrepo-com (1).svg"
+            src={
+              dark ? "/heart-like-dark.svg" : "/heart-like-svgrepo-com (1).svg"
+            }
             alt="Gostei"
           />
         </div>

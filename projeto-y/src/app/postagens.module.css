@@ -11,6 +11,10 @@
   margin-bottom: 0.25rem;
 }
 
+.dark {
+  background-color: #111;
+}
+
 .avatar {
   grid-area: a;
   display: flex;
