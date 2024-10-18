@@ -14,8 +14,12 @@ export default function Postagem() {
       </div>
       <div className={styles.perfil}>
         <div className={styles.name}>
-          <div className={styles.nomedousuario}>eminen</div>
-          <div className={styles.arrobausuario}>@eminen</div>
+          <div className={styles.nomedousuario}>
+            <span className={dark ? styles.username : ""}>eminen</span>
+          </div>
+          <div className={styles.arrobausuario}>
+            <span className={dark ? styles.arroba : ""}>@eminen</span>
+          </div>
         </div>
         <div className={styles.points}>
           <img
@@ -25,7 +29,7 @@ export default function Postagem() {
           />
         </div>
       </div>
-      <div className={styles.Mensagem}>
+      <div className={`${styles.Mensagem} ${dark ? styles.dark2 : ""}`}>
         Descubra a beleza das pequenas coisas do dia a dia. Um sorriso, uma
         flor, ou um pôr do sol podem transformar o seu momento
       </div>
