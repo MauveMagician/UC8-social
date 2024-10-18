@@ -176,6 +176,37 @@ app
         res.status(500).json({ message: "Internal server error" });
       }
     });
+    // Add this route to handle requests for user data by handle
+    server.get("/api/users/:handle", async (req, res) => {
+      const { handle } = req.params;
+
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        // Query the database for the user with the given handle
+        const [user] = await connection.execute(
+          "SELECT * FROM users WHERE nome = ?",
+          [handle]
+        );
+
+        connection.end();
+
+        if (user.length === 0) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        // Return the user data as JSON
+        res.status(200).json(user[0]);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
     server.get("/api/data/pfp", async (req, res) => {
       try {
         const connection = await mysql.createConnection({
