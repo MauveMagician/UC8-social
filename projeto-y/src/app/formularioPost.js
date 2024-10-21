@@ -1,7 +1,9 @@
 import { useState } from "react";
 import styles from "./formularioPost.module.css";
+import { useDarkMode } from "@/app/context/DarkModeContext";
 
 export default function FormularioPost() {
+  const { dark, setDark } = useDarkMode();
   const [postContent, setPostContent] = useState("");
 
   const handleSubmit = async (event) => {
@@ -29,16 +31,22 @@ export default function FormularioPost() {
   };
 
   return (
-    <div className={styles.container}>
-      <form onSubmit={handleSubmit} className={styles.containerfilho}>
+    <div className={`${styles.container}`}>
+      <form
+        onSubmit={handleSubmit}
+        className={`${styles.containerfilho} ${dark ? styles.dark : ""}`}
+      >
         <textarea
           type="text"
           placeholder="Digite seu post..."
-          className={styles.textarea1}
+          className={`${styles.textarea1} ${dark ? styles.dark2 : ""}`}
           value={postContent}
           onChange={(e) => setPostContent(e.target.value)}
         ></textarea>
-        <button type="submit" className={styles.postar}>
+        <button
+          type="submit"
+          className={`${dark ? styles.dark3 : styles.postar}`}
+        >
           Postar
         </button>
       </form>

@@ -2,7 +2,7 @@
 import styles from "./menuInferior.module.css";
 import { useState } from "react";
 import Login from "./login";
-import FormularioPost from "@/formularioPost";
+import FormularioPost from "@/app/formularioPost";
 import { useDarkMode } from "./context/DarkModeContext";
 
 export default function MenuInferior() {

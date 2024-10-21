@@ -17,7 +17,12 @@
   background-color: #111;
 }
 
-.dark2 {
+.darkinput {
+  background-color: #333;
+  color: #f5f5f5;
+}
+
+.darkcadastro {
   background-color: white;
   color: black;
   font-weight: 600;
@@ -83,4 +88,10 @@
   height: 3rem;
   right: 0;
   top: 0;
+}
+
+.close button {
+  width: 0;
+  height: 0;
+  border: none;
 }

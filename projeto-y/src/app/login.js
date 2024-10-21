@@ -46,19 +46,19 @@ export default function Login({ setRenderLog }) {
           </button>
         </div>
         <form onSubmit={handleSignUp} className={styles.containerfilho}>
-          <p className={`${dark ? styles.dark2 : ""}`}>Email de usuário</p>
+          <p className={`${dark ? styles.lightfont : ""}`}>Email de usuário</p>
           <input
             type="email"
             placeholder="Digite seu email"
-            className={styles.input1}
+            className={`${styles.input1} ${dark ? styles.darkinput : ""}`}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-          <p className={`${dark ? styles.dark2 : ""}`}>Senha</p>
+          <p className={`${dark ? styles.lightpassword : ""}`}>Senha</p>
           <input
             type="password"
             placeholder="Digite sua senha"
-            className={styles.input2}
+            className={`${styles.input1} ${dark ? styles.darkinput : ""}`}
             onChange={(e) => setSenha(e.target.value)}
             required
           />
@@ -73,10 +73,12 @@ export default function Login({ setRenderLog }) {
             </button>
           </div>
         </form>
-        <div className={`${styles.cadastro} ${dark ? styles.dark2 : ""}`}>
+        <div
+          className={`${styles.cadastro} ${dark ? styles.lightaccount : ""}`}
+        >
           Não tem uma conta?
           <span
-            className={`${dark ? styles.dark3 : styles.conta}`}
+            className={`${dark ? styles.lightcreate : styles.conta}`}
             onClick={() => {
               setAccount(true);
             }}

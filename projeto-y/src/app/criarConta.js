@@ -47,25 +47,25 @@ export default function CriarConta({ setAccount }) {
             placeholder="Nome"
             value={nome}
             onChange={(e) => setNome(e.target.value)}
-            className={styles.input1}
+            className={`${styles.input1} ${dark ? styles.darkinput : ""}`}
           />
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className={styles.input1}
+            className={`${styles.input1} ${dark ? styles.darkinput : ""}`}
           />
           <input
             type="password"
             placeholder="Senha"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
-            className={styles.input1}
+            className={`${styles.input1} ${dark ? styles.darkinput : ""}`}
           />
           <button
             type="submit"
-            className={`${dark ? styles.dark2 : styles.cadastrar}`}
+            className={`${dark ? styles.darkcadastro : styles.cadastrar}`}
           >
             Cadastrar
           </button>
