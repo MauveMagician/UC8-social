@@ -1,7 +1,9 @@
 import { useState } from "react";
 import styles from "./criarConta.module.css";
+import { useDarkMode } from "@/app/context/DarkModeContext";
 
 export default function CriarConta({ setAccount }) {
+  const { dark } = useDarkMode();
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [nome, setNome] = useState("");
@@ -28,13 +30,15 @@ export default function CriarConta({ setAccount }) {
   };
   return (
     <>
-      <div className={styles.container}>
+      <div className={`${styles.container} ${dark ? styles.dark : ""}`}>
         <div className={styles.pato}>
-          <img src="/pato.svg"></img>
+          <img src={dark ? "/pato-dark.svg" : "/pato.svg"}></img>
         </div>
         <div className={styles.close}>
           <button className={styles.fechar} onClick={() => setAccount(false)}>
-            <img src="/closebutton.svg"></img>
+            <img
+              src={dark ? "/closebutton-dark.svg" : "/closebutton.svg"}
+            ></img>
           </button>
         </div>
         <form onSubmit={handleSignUp}>
@@ -43,23 +47,26 @@ export default function CriarConta({ setAccount }) {
             placeholder="Nome"
             value={nome}
             onChange={(e) => setNome(e.target.value)}
-            className={styles.input1}
+            className={`${styles.input1} ${dark ? styles.darkinput : ""}`}
           />
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className={styles.input1}
+            className={`${styles.input1} ${dark ? styles.darkinput : ""}`}
           />
           <input
             type="password"
             placeholder="Senha"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
-            className={styles.input1}
+            className={`${styles.input1} ${dark ? styles.darkinput : ""}`}
           />
-          <button type="submit" className={styles.cadastrar}>
+          <button
+            type="submit"
+            className={`${dark ? styles.darkcadastro : styles.cadastrar}`}
+          >
             Cadastrar
           </button>
         </form>

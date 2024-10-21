@@ -13,6 +13,10 @@
   padding-right: 1.5rem;
 }
 
+.dark {
+  background-color: #111;
+}
+
 .mais img {
   width: 2rem;
   height: 2rem;
