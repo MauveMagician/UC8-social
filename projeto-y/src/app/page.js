@@ -4,6 +4,7 @@ import MenuSuperior from "./menuSuperior";
 import MenuInferior from "./menuInferior";
 import Postagem from "./postagens";
 import { DarkModeContextProvider } from "./context/DarkModeContext";
+import Conta from "./conta";
 
 export default function Home() {
   return (

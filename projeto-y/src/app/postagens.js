@@ -2,15 +2,14 @@
 import Image from "next/image";
 import styles from "./postagens.module.css";
 import { useDarkMode } from "@/app/context/DarkModeContext";
+import FotoPerfil from "./fotoperfil";
 
 export default function Postagem() {
   const { dark } = useDarkMode();
   return (
     <div className={`${styles.container} ${dark ? styles.dark : ""}`}>
       <div className={styles.avatar}>
-        <div className={styles.bolapai}>
-          <div className={styles.bola}></div>
-        </div>
+        <FotoPerfil user_id={1} className={styles.foto} />
       </div>
       <div className={styles.perfil}>
         <div className={styles.name}>
