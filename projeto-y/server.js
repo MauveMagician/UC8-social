@@ -274,10 +274,6 @@ app
         res.status(500).json({ message: "Internal server error" });
       }
     });
-    // Handle all other routes with Next.js
-    server.all("*", (req, res) => {
-      return handle(req, res);
-    });
     server.get("/api/data/post/", async (req, res) => {
       const post_id = req.query.post_id;
       try {
@@ -298,12 +294,14 @@ app
           return res.status(404).json({ message: "Post not found" });
         }
         return res.status(200).json(post[0]);
-        //Enviar em um json os dados do post (que deve estar na posição [0] do array) e enviar na resposta com o código
-        //Criar um json com os dados do post (que deve estar na posição [0] do array) e enviar na resposta com o código 200
       } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Internal server error" });
       }
+    });
+    // Handle all other routes with Next.js
+    server.all("*", (req, res) => {
+      return handle(req, res);
     });
     server.listen(3000, (err) => {
       if (err) throw err;
