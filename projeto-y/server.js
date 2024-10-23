@@ -278,7 +278,23 @@ app
     server.all("*", (req, res) => {
       return handle(req, res);
     });
-
+    server.get("/api/data/post/", async (req, res) => {
+      const { post_id } = req.query.post_id;
+      try {
+        //Conectar ao banco de dados
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+        //Realizar uma consulta para buscar um post post pelo id e colocar em um array
+        //Criar um json com os dados do post (que deve estar na posição [0] do array) e enviar na resposta com o código 200
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
     server.listen(3000, (err) => {
       if (err) throw err;
       console.log("> Ready on http://localhost:3000");
