@@ -299,7 +299,30 @@ app
         res.status(401).json({ message: "Not authenticated" });
       }
     });
-
+    // Rota GET para determinar se um post tem like pelo usuário ou requack
+    server.get("/api/data/likes-rqs", async (req, res) => {
+      //Requerir autenticação e puxar o id do usuário logado para operação no back-end
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const user_id = await fetchIdBySession(req);
+      try {
+        //Conectar ao banco de dados
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+        //Consultar se o post tem like pelo usuário logado
+        //Consultar se o post tem retweet pelo usuário logado
+        //Criar um json que contém as respostas: o like_id e o requack_id do post se houver, se não houver o json precisa do campo mas ele pode ser null.
+        //Enviar o json para o cliente na resposta
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
     // Handle all other routes with Next.js
     server.all("*", (req, res) => {
       return handle(req, res);

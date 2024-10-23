@@ -3,17 +3,28 @@ import Image from "next/image";
 import styles from "./postagens.module.css";
 import { useDarkMode } from "@/app/context/DarkModeContext";
 import FotoPerfil from "./fotoperfil";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Postagem({ post_id }) {
   const { dark } = useDarkMode();
   const [like, setLike] = useState(false);
   const [requack, setRequack] = useState(false);
+  useEffect(async () => {
+    //Determinar se o post possui um like, retweet pelo usuário ou não
+    const response = await fetch(`/api/data/likes-rqs?post_id=${post_id}`);
+    if (response.ok) {
+      //Transformar a resposta em JSON
+      const likeData = await response.json();
+      //Se likeData tem um like_id, significa que o post possui um like pelo usuário
+      //Mudar o estado do like no componente
+      //Se likeData tem um requack_id, significa que o post possui um requack pelo usuário
+      //Mudar o estado do requack no componente
+    }
+  }, []);
   const handleLike = async () => {
     // Adicionar ou remover o like
     const response = await fetch(`/api/data/likes?post_id=${post_id}`);
     if (response.ok) {
-      console.log("Like added or removed");
       setLike(!like);
     }
   };
