@@ -249,7 +249,25 @@ app
         res.status(401).json({ message: "Not authenticated" });
       }
     });
-
+    //Rota que puxa todos os posts de determinado usuário no banco de dados
+    server.get("/api/data/posts/", async (req, res) => {
+      //Obtém o id do usuário pelo handle da requisição usando query
+      const { user_id } = req.query;
+      try {
+        //Conectar com o banco de dados
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+        //Realizar uma consulta para buscar todos os posts do usuário e colocar em um array
+        //Enviar em um json os posts para o cliente, juntamente com o código 200
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
     // Handle all other routes with Next.js
     server.all("*", (req, res) => {
       return handle(req, res);

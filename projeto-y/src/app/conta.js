@@ -2,6 +2,9 @@
 import styles from "./conta.module.css";
 import { useState, useEffect } from "react";
 import "./globals.css";
+import PostsUsuario from "./postsUsuario";
+import MidiasUsuario from "./midiasUsuario";
+import MencoesUsuario from "./mencoesUsuario";
 
 export default function Conta({ user_id }) {
   const [pfp, setPfp] = useState(null);
@@ -102,6 +105,10 @@ export default function Conta({ user_id }) {
             </button>
           </div>
         </div>
+
+        {Color[0] ? <PostsUsuario user_id={user_id} /> : <></>}
+        {Color[1] ? <MidiasUsuario user_id={user_id} /> : <></>}
+        {Color[2] ? <MencoesUsuario user_id={user_id} /> : <></>}
       </div>
     </>
   );
