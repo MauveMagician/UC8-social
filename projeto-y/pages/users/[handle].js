@@ -1,3 +1,5 @@
+import Conta from "@/app/conta";
+
 export async function getServerSideProps(context) {
   const { handle } = context.params;
 
@@ -31,10 +33,8 @@ export default function Contausers({ user }) {
   }
 
   return (
-    <div>
-      <h1>{user.name}</h1>
-      <p>Email: {user.email}</p>
-      {/* Render other user details as needed */}
-    </div>
+    <>
+      <Conta user_id={user.user_id} />
+    </>
   );
 }
