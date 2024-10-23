@@ -252,7 +252,7 @@ app
     //Rota que puxa todos os posts de determinado usuário no banco de dados
     server.get("/api/data/posts/", async (req, res) => {
       //Obtém o id do usuário pelo handle da requisição usando query
-      const { user_id } = req.query;
+      const user_id = req.query.user_id;
       try {
         //Conectar com o banco de dados
         const connection = await mysql.createConnection({
@@ -262,7 +262,13 @@ app
           database: process.env.DB_NAME,
         });
         //Realizar uma consulta para buscar todos os posts do usuário e colocar em um array
+        const [posts] = await connection.execute(
+          "SELECT * FROM posts WHERE user_id =?",
+          [user_id]
+        );
         //Enviar em um json os posts para o cliente, juntamente com o código 200
+        connection.end();
+        res.status(200).json(posts);
       } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Internal server error" });
