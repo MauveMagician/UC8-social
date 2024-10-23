@@ -279,7 +279,7 @@ app
       return handle(req, res);
     });
     server.get("/api/data/post/", async (req, res) => {
-      const { post_id } = req.query.post_id;
+      const post_id = req.query.post_id;
       try {
         //Conectar ao banco de dados
         const connection = await mysql.createConnection({
@@ -289,6 +289,16 @@ app
           database: process.env.DB_NAME,
         });
         //Realizar uma consulta para buscar um post post pelo id e colocar em um array
+        const [post] = await connection.execute(
+          "SELECT * FROM posts WHERE post_id = ?",
+          [post_id]
+        );
+        connection.end();
+        if (post.length === 0) {
+          return res.status(404).json({ message: "Post not found" });
+        }
+        return res.status(200).json(post[0]);
+        //Enviar em um json os dados do post (que deve estar na posição [0] do array) e enviar na resposta com o código
         //Criar um json com os dados do post (que deve estar na posição [0] do array) e enviar na resposta com o código 200
       } catch (error) {
         console.error(error);

@@ -2,19 +2,17 @@
 import Image from "next/image";
 import styles from "./postagens.module.css";
 import FotoPerfil from "./fotoperfil";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function Postagem({ post_id }) {
   //Criar useStates para armazenar dados da postagem
   const [content, setContent] = useState("");
   const [user_id, setUserId] = useState("");
   const [user_name, setUserName] = useState("");
-  useEffect =
-    (() => {
-      //Puxar do banco de dados os dados da postagem
-      //Parsear o json com os dados e usar os setters dos useStates para trocar os elementos do componente
-    },
-    []);
+  useEffect(() => {
+    //Puxar do banco de dados os dados da postagem
+    //Parsear o json com os dados e usar os setters dos useStates para trocar os elementos do componente
+  }, []);
   return (
     <div className={styles.container}>
       <div className={styles.avatar}>
