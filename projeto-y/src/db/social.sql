@@ -6,3 +6,10 @@ CREATE TABLE users(user_id INT PRIMARY KEY auto_increment, email VARCHAR(50) NOT
 
 CREATE TABLE posts(post_id INT PRIMARY KEY auto_increment, user_id INT, content VARCHAR(140), FOREIGN KEY (user_id) REFERENCES users(user_id));
 CREATE TABLE pfp(photo_id INT PRIMARY KEY auto_increment, user_id INT, photo VARCHAR(1024), FOREIGN KEY (user_id) REFERENCES users (user_id));
+CREATE TABLE likes(
+    likes_id INT PRIMARY KEY auto_increment,
+    user_id INT,
+    post_id INT,
+    FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE,
+    FOREIGN KEY (post_id) REFERENCES posts (post_id) ON DELETE CASCADE
+);

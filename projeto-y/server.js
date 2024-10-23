@@ -176,6 +176,49 @@ app
         res.status(500).json({ message: "Internal server error" });
       }
     });
+    server.get("/api/data/likes", async (req, res) => {
+      if (!req.session.user) {
+        // Redirect to login page if not authenticated
+        res.status(401).json({ message: "Not authenticated" });
+        // return;
+      }
+      const user_id = await fetchIdBySession(req);
+      // Fetch the number of likes for the given post
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+          // Assuming you have a column named "likes" in the posts table
+        });
+        const [register] = await connection.execute(
+          "SELECT * FROM likes WHERE user_id = ? AND post_id =?",
+          [user_id, req.query.post_id]
+        );
+        if (!register.length) {
+          await connection.execute(
+            "INSERT INTO likes (user_id, post_id) VALUES (?, ?)",
+            [user_id, req.query.post_id]
+            // Assuming you have a table named "likes" and a column named "post_id"
+          );
+          res.status(201).json({ message: "Like is successful!" });
+          // Increase the like count in the posts table
+        } else {
+          await connection.execute(
+            "DELETE FROM likes WHERE user_id =? AND post_id =?",
+            [user_id, req.query.post_id]
+            // Assuming you have a table named "likes" and a column named "post_id"
+          );
+          res.status(200).json({ message: "Like removed successfully!" });
+          // Decrease the like count in the posts table
+        }
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+        // Decrease the like count in the posts table
+      }
+    });
     server.get("/api/data/pfp", async (req, res) => {
       try {
         const connection = await mysql.createConnection({

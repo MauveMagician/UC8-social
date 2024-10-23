@@ -4,8 +4,15 @@ import styles from "./postagens.module.css";
 import { useDarkMode } from "@/app/context/DarkModeContext";
 import FotoPerfil from "./fotoperfil";
 
-export default function Postagem() {
+export default function Postagem({ post_id }) {
   const { dark } = useDarkMode();
+  const handleLike = () => {
+    // Adicionar ou remover o like
+    const response = fetch(`/api/data/likes?post_id=${post_id}`);
+    if (response.ok) {
+      // Atualizar o número de likes na interface
+    }
+  };
   return (
     <div className={`${styles.container} ${dark ? styles.dark : ""}`}>
       <div className={styles.avatar}>
@@ -47,6 +54,7 @@ export default function Postagem() {
               dark ? "/heart-like-dark.svg" : "/heart-like-svgrepo-com (1).svg"
             }
             alt="Gostei"
+            onClick={handleLike}
           />
         </div>
       </div>

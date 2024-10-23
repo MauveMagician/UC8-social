@@ -11,10 +11,7 @@ export default function Home() {
     <>
       <DarkModeContextProvider>
         <MenuSuperior />
-        <Postagem />
-        <Postagem />
-        <Postagem />
-        <Postagem />
+        <Postagem post_id={1} />
         <MenuInferior />
       </DarkModeContextProvider>
     </>
