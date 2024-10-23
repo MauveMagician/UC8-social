@@ -202,7 +202,7 @@ app
             [user_id, req.query.post_id]
             // Assuming you have a table named "likes" and a column named "post_id"
           );
-          res.status(201).json({ message: "Like is successful!" });
+          res.status(200).json({ message: "Like is successful!" });
           // Increase the like count in the posts table
         } else {
           await connection.execute(
@@ -219,6 +219,44 @@ app
         // Decrease the like count in the posts table
       }
     });
+
+    server.get("/api/data/requacks", async (req, res) => {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const user_id = await fetchIdBySession(req);
+
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        const [register] = await connection.execute(
+          "SELECT * FROM requacks WHERE user_id = ? AND post_id = ?",
+          [user_id, req.query.post_id]
+        );
+        if (!register.length) {
+          await connection.execute(
+            "INSERT INTO requacks (user_id, post_id) VALUES (?, ?)",
+            [user_id, req.query.post_id]
+          );
+          res.status(200).json({ message: "Requack sent successfully!" });
+        } else {
+          await connection.execute(
+            "DELETE FROM requacks WHERE user_id = ? AND post_id = ?",
+            [user_id, req.query.post_id]
+          );
+          res.status(200).json({ message: "Requack removed successfully!" });
+        }
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
     server.get("/api/data/pfp", async (req, res) => {
       try {
         const connection = await mysql.createConnection({

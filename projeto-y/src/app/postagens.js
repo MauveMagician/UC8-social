@@ -3,14 +3,29 @@ import Image from "next/image";
 import styles from "./postagens.module.css";
 import { useDarkMode } from "@/app/context/DarkModeContext";
 import FotoPerfil from "./fotoperfil";
+import { useState } from "react";
 
 export default function Postagem({ post_id }) {
   const { dark } = useDarkMode();
-  const handleLike = () => {
+  const [like, setLike] = useState(false);
+  const [requack, setRequack] = useState(false);
+  const handleLike = async () => {
     // Adicionar ou remover o like
-    const response = fetch(`/api/data/likes?post_id=${post_id}`);
+    const response = await fetch(`/api/data/likes?post_id=${post_id}`);
     if (response.ok) {
-      // Atualizar o número de likes na interface
+      console.log("Like added or removed");
+      setLike(!like);
+    }
+  };
+  const handleRequack = async () => {
+    try {
+      const response = await fetch(`/api/data/requacks?post_id=${post_id}`);
+      if (response.ok) {
+        // Atualizar o número de requacks na interface
+        setRequack(!requack);
+      }
+    } catch (error) {
+      console.error("Error requacking the post:", error);
     }
   };
   return (
@@ -43,15 +58,26 @@ export default function Postagem({ post_id }) {
         <div className={styles.svg}>
           <img
             className={styles.img}
-            src={dark ? "/retweet-dark.svg" : "/retweet-svgrepo-com.svg"}
+            src={
+              requack
+                ? "/retweet-filled.svg"
+                : dark
+                ? "/retweet-dark.svg"
+                : "/retweet-svgrepo-com.svg"
+            }
             alt="Republicar"
+            onClick={handleRequack}
           />
         </div>
         <div className={styles.svg}>
           <img
             className={styles.img}
             src={
-              dark ? "/heart-like-dark.svg" : "/heart-like-svgrepo-com (1).svg"
+              like
+                ? "/heart-filled.svg"
+                : dark
+                ? "/heart-like-dark.svg"
+                : "/heart-like-svgrepo-com (1).svg"
             }
             alt="Gostei"
             onClick={handleLike}
