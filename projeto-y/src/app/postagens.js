@@ -24,7 +24,6 @@ export default function Postagem({ post_id }) {
         if (likeData.requack_id) {
           setRequack(true);
         }
-        console.log("Like data:", likeData);
       }
     };
     fetchLikeData();
