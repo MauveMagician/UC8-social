@@ -5,6 +5,7 @@ import MenuInferior from "./menuInferior";
 import Postagem from "./postagens";
 import { DarkModeContextProvider } from "./context/DarkModeContext";
 import Conta from "./conta";
+import Timeline from "./timeline";
 
 export default function Home() {
   return (

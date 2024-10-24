@@ -2,6 +2,9 @@
 import styles from "./conta.module.css";
 import { useState, useEffect } from "react";
 import "./globals.css";
+import PostsUsuario from "./postsUsuario";
+import MidiasUsuario from "./midiasUsuario";
+import MencoesUsuario from "./mencoesUsuario";
 
 export default function Conta({ user_id }) {
   const [pfp, setPfp] = useState(null);
@@ -24,12 +27,20 @@ export default function Conta({ user_id }) {
       fetchPhoto();
     }
   }, []);
+  //função do botão mudar a aparência quando clicado
+  const [Color, setColor] = useState([true, false, false]);
+  const handleClick = (index) => {
+    const newColor = [false, false, false];
+    newColor[index] = true;
+    setColor(newColor);
+    console.log("mudou a cor do botão");
+  };
   return (
     <>
-      <div className={styles.container}>
-        <div className={styles.cabecalho}>
+      <div className={styles.planet}>
+        <div className={styles.cabecalho}></div>
+        <div className={styles.container}>
           <div className={styles.I}>
-            <div className={styles.postagens}>suas postagens 0</div>
             <div className={styles.info}>
               <div className={styles.foto}>
                 {pfp ? (
@@ -38,11 +49,12 @@ export default function Conta({ user_id }) {
                   <p>Loading...</p>
                 )}
               </div>
-              <div className={styles.perfil}>
-                <div className={styles.nome}>Eminen</div>
-                <div className={styles.email}>email</div>
-              </div>
+
               <div className={styles.myfriends}>
+                <div className={styles.numeros}>
+                  <div className={styles.numero}>12</div>
+                  <div className={styles.palavras}>seguidores</div>
+                </div>
                 <div className={styles.numeros}>
                   <div className={styles.numero}>12</div>
                   <div className={styles.palavras}>seguindo</div>
@@ -53,12 +65,51 @@ export default function Conta({ user_id }) {
                 </div>
               </div>
             </div>
+            <div className={styles.perfil}>
+              <div className={styles.nome}>Eminen</div>
+              <div className={styles.email}>email</div>
+            </div>
             <div className={styles.bio}>
               Apaixonado por tecnologia e inovação. Transformando ideias em
               realidade. 💻🚀
             </div>
           </div>
         </div>
+
+        <div className={styles.container2}>
+          <div className={styles.follows}>
+            <button className={styles.seguir}>
+              <p className={styles.p}>Seguir</p>
+            </button>
+            <button className={styles.seguir}>
+              <p className={styles.p}>Conversar</p>
+            </button>
+          </div>
+          <div className={styles.conteudos}>
+            <button
+              className={Color[0] ? styles.nodestaque : styles.ydestaque}
+              onClick={() => handleClick(0)}
+            >
+              Quacks
+            </button>
+            <button
+              className={Color[1] ? styles.nodestaque : styles.ydestaque}
+              onClick={() => handleClick(1)}
+            >
+              Mídias
+            </button>
+            <button
+              className={Color[2] ? styles.nodestaque : styles.ydestaque}
+              onClick={() => handleClick(2)}
+            >
+              Menções
+            </button>
+          </div>
+        </div>
+
+        {Color[0] ? <PostsUsuario user_id={user_id} /> : <></>}
+        {Color[1] ? <MidiasUsuario user_id={user_id} /> : <></>}
+        {Color[2] ? <MencoesUsuario user_id={user_id} /> : <></>}
       </div>
     </>
   );

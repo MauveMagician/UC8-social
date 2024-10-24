@@ -1,0 +1,19 @@
+<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+  <g fill="black">
+    <!-- Pato -->
+    <ellipse cx="100" cy="150" rx="40" ry="20" />
+    <circle cx="100" cy="120" r="30" />
+    <circle cx="90" cy="110" r="5" />
+    <circle cx="110" cy="110" r="5" />
+    <polygon points="100,130 90,140 110,140" />
+    
+    <!-- Megafone -->
+    <polygon points="130,100 150,90 170,110 150,130" />
+    <rect x="150" y="90" width="10" height="40" />
+    <polygon points="160,90 180,80 180,140 160,130" />
+    
+    <!-- Som -->
+    <path d="M180,80 Q200,100 180,120" stroke="black" stroke-width="2" fill="none" />
+    <path d="M180,90 Q190,100 180,110" stroke="black" stroke-width="2" fill="none" />
+  </g>
+</svg>
