@@ -6,7 +6,7 @@ import FotoPerfil from "./fotoperfil";
 import { useEffect, useState } from "react";
 
 export default function Postagem({ post_id }) {
-  const { dark } = useDarkMode();
+  const dark = useDarkMode();
   const [content, setContent] = useState("");
   const [user_id, setUserId] = useState("");
   const [user_name, setUserName] = useState("");
