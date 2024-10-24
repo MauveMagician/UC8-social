@@ -4,9 +4,8 @@ import styles from "./postagens.module.css";
 import { useDarkMode } from "@/app/context/DarkModeContext";
 import FotoPerfil from "./fotoperfil";
 import { useEffect, useState } from "react";
-import { useEffect, useState } from "react";
 
-export default function Postagem({ post_id }{ post_id }) {
+export default function Postagem({ post_id }) {
   const dark = useDarkMode();
   const [content, setContent] = useState("");
   const [user_id, setUserId] = useState("");
