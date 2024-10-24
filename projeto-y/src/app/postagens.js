@@ -10,7 +10,7 @@ export default function Postagem({ post_id }) {
   const [like, setLike] = useState(false);
   const [requack, setRequack] = useState(false);
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchLikeData = async () => {
       //Determinar se o post possui um like, retweet pelo usuário ou não
       const response = await fetch(`/api/data/likes-rqs?post_id=${post_id}`);
       if (response.ok) {
@@ -27,7 +27,7 @@ export default function Postagem({ post_id }) {
         console.log("Like data:", likeData);
       }
     };
-    fetchData();
+    fetchLikeData();
   }, []);
   const handleLike = async () => {
     // Adicionar ou remover o like
