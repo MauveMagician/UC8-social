@@ -10,6 +10,22 @@
     "d d d";
 }
 
+.dark {
+  background-color: #111;
+}
+
+.dark2 {
+  color: white;
+}
+
+.username {
+  color: white;
+}
+
+.arroba {
+  color: white;
+}
+
 .avatar {
   grid-area: a;
   display: flex;

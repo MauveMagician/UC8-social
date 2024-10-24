@@ -3,15 +3,21 @@ import styles from "./page.module.css";
 import MenuSuperior from "./menuSuperior";
 import MenuInferior from "./menuInferior";
 import Postagem from "./postagens";
+import { DarkModeContextProvider } from "./context/DarkModeContext";
 import Conta from "./conta";
 import Timeline from "./timeline";
 
 export default function Home() {
   return (
     <>
-      <MenuSuperior />
-      <img src={"/patomegafone.svg"}></img>
-      <MenuInferior />
+      <DarkModeContextProvider>
+        <MenuSuperior />
+        <Postagem />
+        <Postagem />
+        <Postagem />
+        <Postagem />
+        <MenuInferior />
+      </DarkModeContextProvider>
     </>
   );
 }

@@ -1,9 +1,12 @@
 "use client";
 import Image from "next/image";
 import styles from "./postagens.module.css";
+import { useDarkMode } from "@/app/context/DarkModeContext";
 import FotoPerfil from "./fotoperfil";
 import { useEffect, useState } from "react";
 
+export default function Postagem() {
+  const { dark } = useDarkMode();
 export default function Postagem({ post_id }) {
   const [content, setContent] = useState("");
   const [user_id, setUserId] = useState("");
@@ -27,19 +30,23 @@ export default function Postagem({ post_id }) {
     fetchData();
   }, [user_id]);
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${dark ? styles.dark : ""}`}>
       <div className={styles.avatar}>
         <FotoPerfil user_id={user_id} className={styles.foto} />
       </div>
       <div className={styles.perfil}>
         <div className={styles.name}>
-          <div className={styles.nomedousuario}>{user_name}</div>
-          <div className={styles.arrobausuario}>@user</div>
+          <div className={styles.nomedousuario}>
+            <span className={dark ? styles.username : ""}>eminen</span>
+          </div>
+          <div className={styles.arrobausuario}>
+            <span className={dark ? styles.arroba : ""}>@eminen</span>
+          </div>
         </div>
         <div className={styles.points}>
           <img
             className={styles.img}
-            src="/ellipsis-svgrepo-com.svg"
+            src={dark ? "/ellipsis-dark.svg" : "/ellipsis-svgrepo-com.svg"}
             alt="Salvar"
           />
         </div>
@@ -49,14 +56,16 @@ export default function Postagem({ post_id }) {
         <div className={styles.svg}>
           <img
             className={styles.img}
-            src="/retweet-svgrepo-com.svg"
+            src={dark ? "/retweet-dark.svg" : "/retweet-svgrepo-com.svg"}
             alt="Republicar"
           />
         </div>
         <div className={styles.svg}>
           <img
             className={styles.img}
-            src="/heart-like-svgrepo-com (1).svg"
+            src={
+              dark ? "/heart-like-dark.svg" : "/heart-like-svgrepo-com (1).svg"
+            }
             alt="Gostei"
           />
         </div>
