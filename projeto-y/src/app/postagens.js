@@ -5,9 +5,8 @@ import { useDarkMode } from "@/app/context/DarkModeContext";
 import FotoPerfil from "./fotoperfil";
 import { useEffect, useState } from "react";
 
-export default function Postagem() {
-  const { dark } = useDarkMode();
 export default function Postagem({ post_id }) {
+  const { dark } = useDarkMode();
   const [content, setContent] = useState("");
   const [user_id, setUserId] = useState("");
   const [user_name, setUserName] = useState("");
@@ -28,7 +27,8 @@ export default function Postagem({ post_id }) {
       }
     };
     fetchData();
-  }, [user_id]);
+  }, [post_id]);
+
   return (
     <div className={`${styles.container} ${dark ? styles.dark : ""}`}>
       <div className={styles.avatar}>
@@ -37,10 +37,10 @@ export default function Postagem({ post_id }) {
       <div className={styles.perfil}>
         <div className={styles.name}>
           <div className={styles.nomedousuario}>
-            <span className={dark ? styles.username : ""}>eminen</span>
+            <span className={dark ? styles.username : ""}>{user_name}</span>
           </div>
           <div className={styles.arrobausuario}>
-            <span className={dark ? styles.arroba : ""}>@eminen</span>
+            <span className={dark ? styles.arroba : ""}>@{user_name}</span>
           </div>
         </div>
         <div className={styles.points}>
