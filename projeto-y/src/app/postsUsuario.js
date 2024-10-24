@@ -18,7 +18,7 @@ export default function PostUsuario({ user_id }) {
   return (
     <div>
       {posts.map((post) => (
-        <Postagem />
+        <Postagem key={post.post_id} post_id={post.post_id} />
       ))}
     </div>
   );

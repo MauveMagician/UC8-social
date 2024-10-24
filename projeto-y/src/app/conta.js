@@ -38,6 +38,7 @@ export default function Conta({ user_id }) {
   return (
     <>
       <div className={styles.planet}>
+        <div className={styles.cabecalho}></div>
         <div className={styles.container}>
           <div className={styles.I}>
             <div className={styles.info}>

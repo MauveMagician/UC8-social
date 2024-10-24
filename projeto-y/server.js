@@ -286,7 +286,7 @@ app
         });
         //Realizar uma consulta para buscar um post post pelo id e colocar em um array
         const [post] = await connection.execute(
-          "SELECT * FROM posts WHERE post_id = ?",
+          "SELECT posts.Content,posts.user_id,users.nome AS username FROM posts,users WHERE post_id = ? AND posts.user_id = users.user_id",
           [post_id]
         );
         connection.end();

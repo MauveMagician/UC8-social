@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <>
       <MenuSuperior />
-      <Timeline />
+      <img src={"/patomegafone.svg"}></img>
       <MenuInferior />
     </>
   );

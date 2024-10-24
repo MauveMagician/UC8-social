@@ -5,14 +5,27 @@ import FotoPerfil from "./fotoperfil";
 import { useEffect, useState } from "react";
 
 export default function Postagem({ post_id }) {
-  //Criar useStates para armazenar dados da postagem
   const [content, setContent] = useState("");
   const [user_id, setUserId] = useState("");
   const [user_name, setUserName] = useState("");
+
   useEffect(() => {
-    //Puxar do banco de dados os dados da postagem
-    //Parsear o json com os dados e usar os setters dos useStates para trocar os elementos do componente
-  }, []);
+    const fetchData = async () => {
+      try {
+        //Puxar do banco de dados os dados da postagem
+        const response = await fetch(`/api/data/post?post_id=${post_id}`);
+        const data = await response.json();
+        console.log(data);
+        //Parsear o json com os dados e usar os setters dos useStates para trocar os elementos do componente
+        setContent(data.Content);
+        setUserId(data.user_id);
+        setUserName(data.username);
+      } catch (error) {
+        console.error("Error fetching post data:", error);
+      }
+    };
+    fetchData();
+  }, [user_id]);
   return (
     <div className={styles.container}>
       <div className={styles.avatar}>
