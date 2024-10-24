@@ -9,9 +9,6 @@ const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
-const fs = require("fs");
-const path = require("path");
-
 const fetchIdBySession = async (req) => {
   const sessionId = req.sessionID; // Get the session ID
 
@@ -37,6 +34,9 @@ const fetchIdBySession = async (req) => {
   connection.end();
   return rows2[0].user_id;
 };
+
+const fs = require("fs");
+const path = require("path");
 
 app
   .prepare()
@@ -151,6 +151,62 @@ app
         res.status(500).json({ message: "Internal server error" });
       }
     });
+
+    server.post("/api/data/post", async (req, res) => {
+      const { content } = req.body;
+      if (!req.session.user) {
+        res.status(401).json({ message: "Not authenticated" });
+      }
+      const user_id = await fetchIdBySession(req);
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+        await connection.execute(
+          "INSERT INTO posts (user_id, content) VALUES (?, ?)",
+          [user_id, content]
+        );
+        connection.end();
+        res.status(201).json({ message: "Post is successful" });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+    // Add this route to handle requests for user data by handle
+    server.get("/api/users/:handle", async (req, res) => {
+      const { handle } = req.params;
+
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        // Query the database for the user with the given handle
+        const [user] = await connection.execute(
+          "SELECT * FROM users WHERE nome = ?",
+          [handle]
+        );
+
+        connection.end();
+
+        if (user.length === 0) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        // Return the user data as JSON
+        res.status(200).json(user[0]);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
     server.get("/api/data/pfp", async (req, res) => {
       try {
         const connection = await mysql.createConnection({
@@ -186,31 +242,6 @@ app
         res.status(500).json({ message: "Internal server error" });
       }
     });
-    server.post("/api/data/post", async (req, res) => {
-      const { content } = req.body;
-      if (!req.session.user) {
-        res.status(401).json({ message: "Not authenticated" });
-      }
-      const user_id = await fetchIdBySession(req);
-      try {
-        const connection = await mysql.createConnection({
-          host: process.env.DB_HOST,
-          user: process.env.DB_USER,
-          password: process.env.DB_PASSWORD,
-          database: process.env.DB_NAME,
-        });
-        await connection.execute(
-          "INSERT INTO posts (user_id, content) VALUES (?, ?)",
-          [user_id, content]
-        );
-        connection.end();
-        res.status(201).json({ message: "Post is successful" });
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Internal server error" });
-      }
-    });
-
     server.get("/api/auth/session", (req, res) => {
       if (req.session.user) {
         res.status(200).json({ user: req.session.user });
@@ -218,12 +249,60 @@ app
         res.status(401).json({ message: "Not authenticated" });
       }
     });
-
+    //Rota que puxa todos os posts de determinado usuário no banco de dados
+    server.get("/api/data/posts/", async (req, res) => {
+      //Obtém o id do usuário pelo handle da requisição usando query
+      const user_id = req.query.user_id;
+      try {
+        //Conectar com o banco de dados
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+        //Realizar uma consulta para buscar todos os posts do usuário e colocar em um array
+        const [posts] = await connection.execute(
+          "SELECT * FROM posts WHERE user_id =?",
+          [user_id]
+        );
+        //Enviar em um json os posts para o cliente, juntamente com o código 200
+        connection.end();
+        res.status(200).json(posts);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+    server.get("/api/data/post/", async (req, res) => {
+      const post_id = req.query.post_id;
+      try {
+        //Conectar ao banco de dados
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+        //Realizar uma consulta para buscar um post post pelo id e colocar em um array
+        const [post] = await connection.execute(
+          "SELECT posts.Content,posts.user_id,users.nome AS username FROM posts,users WHERE post_id = ? AND posts.user_id = users.user_id",
+          [post_id]
+        );
+        connection.end();
+        if (post.length === 0) {
+          return res.status(404).json({ message: "Post not found" });
+        }
+        return res.status(200).json(post[0]);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
     // Handle all other routes with Next.js
     server.all("*", (req, res) => {
       return handle(req, res);
     });
-
     server.listen(3000, (err) => {
       if (err) throw err;
       console.log("> Ready on http://localhost:3000");
