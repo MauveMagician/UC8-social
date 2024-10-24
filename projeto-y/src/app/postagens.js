@@ -9,17 +9,25 @@ export default function Postagem({ post_id }) {
   const { dark } = useDarkMode();
   const [like, setLike] = useState(false);
   const [requack, setRequack] = useState(false);
-  useEffect(async () => {
-    //Determinar se o post possui um like, retweet pelo usuário ou não
-    const response = await fetch(`/api/data/likes-rqs?post_id=${post_id}`);
-    if (response.ok) {
-      //Transformar a resposta em JSON
-      const likeData = await response.json();
-      //Se likeData tem um like_id, significa que o post possui um like pelo usuário
-      //Mudar o estado do like no componente
-      //Se likeData tem um requack_id, significa que o post possui um requack pelo usuário
-      //Mudar o estado do requack no componente
-    }
+  useEffect(() => {
+    const fetchData = async () => {
+      //Determinar se o post possui um like, retweet pelo usuário ou não
+      const response = await fetch(`/api/data/likes-rqs?post_id=${post_id}`);
+      if (response.ok) {
+        //Transformar a resposta em JSON
+        const likeData = await response.json();
+        //Se likeData tem um like_id, significa que o post possui um like pelo usuário
+        if (likeData.like_id) {
+          setLike(true);
+        }
+        // Se likeData tem um requack_id, significa que o post possui um requack pelo usuário
+        if (likeData.requack_id) {
+          setRequack(true);
+        }
+        console.log("Like data:", likeData);
+      }
+    };
+    fetchData();
   }, []);
   const handleLike = async () => {
     // Adicionar ou remover o like

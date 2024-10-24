@@ -299,25 +299,46 @@ app
         res.status(401).json({ message: "Not authenticated" });
       }
     });
-    // Rota GET para determinar se um post tem like pelo usuário ou requack
     server.get("/api/data/likes-rqs", async (req, res) => {
-      //Requerir autenticação e puxar o id do usuário logado para operação no back-end
+      console.log("GET /api/data/likes-rqs");
+      // Requerir autenticação e puxar o id do usuário logado para operação no back-end
       if (!req.session.user) {
         return res.status(401).json({ message: "Not authenticated" });
       }
       const user_id = await fetchIdBySession(req);
+      const post_id = req.query.post_id; // Assuming post_id is passed as a query parameter
+
       try {
-        //Conectar ao banco de dados
+        // Conectar ao banco de dados
         const connection = await mysql.createConnection({
           host: process.env.DB_HOST,
           user: process.env.DB_USER,
           password: process.env.DB_PASSWORD,
           database: process.env.DB_NAME,
         });
-        //Consultar se o post tem like pelo usuário logado
-        //Consultar se o post tem retweet pelo usuário logado
-        //Criar um json que contém as respostas: o like_id e o requack_id do post se houver, se não houver o json precisa do campo mas ele pode ser null.
-        //Enviar o json para o cliente na resposta
+
+        // Consultar se o post tem like pelo usuário logado
+        const [likeResult] = await connection.execute(
+          "SELECT likes_id AS id FROM likes WHERE user_id = ? AND post_id = ?",
+          [user_id, post_id]
+        );
+
+        // Consultar se o post tem retweet pelo usuário logado
+        const [requackResult] = await connection.execute(
+          "SELECT requacks_id AS id FROM requacks WHERE user_id = ? AND post_id = ?",
+          [user_id, post_id]
+        );
+
+        connection.end();
+
+        // Criar um json que contém as respostas: o like_id e o requack_id do post se houver, se não houver o json precisa do campo mas ele pode ser null.
+        const response = {
+          like_id: likeResult.length ? likeResult[0].id : null,
+          requack_id: requackResult.length ? requackResult[0].id : null,
+        };
+
+        // Enviar o json para o cliente na resposta
+        res.status(200).json(response);
       } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Internal server error" });
