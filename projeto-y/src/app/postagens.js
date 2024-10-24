@@ -29,6 +29,45 @@ export default function Postagem({ post_id }) {
     fetchData();
   }, [post_id]);
 
+  const [like, setLike] = useState(false);
+  const [requack, setRequack] = useState(false);
+  useEffect(() => {
+    const fetchLikeData = async () => {
+      //Determinar se o post possui um like, retweet pelo usuário ou não
+      const response = await fetch(`/api/data/likes-rqs?post_id=${post_id}`);
+      if (response.ok) {
+        //Transformar a resposta em JSON
+        const likeData = await response.json();
+        //Se likeData tem um like_id, significa que o post possui um like pelo usuário
+        if (likeData.like_id) {
+          setLike(true);
+        }
+        // Se likeData tem um requack_id, significa que o post possui um requack pelo usuário
+        if (likeData.requack_id) {
+          setRequack(true);
+        }
+      }
+    };
+    fetchLikeData();
+  }, []);
+  const handleLike = async () => {
+    // Adicionar ou remover o like
+    const response = await fetch(`/api/data/likes?post_id=${post_id}`);
+    if (response.ok) {
+      setLike(!like);
+    }
+  };
+  const handleRequack = async () => {
+    try {
+      const response = await fetch(`/api/data/requacks?post_id=${post_id}`);
+      if (response.ok) {
+        // Atualizar o número de requacks na interface
+        setRequack(!requack);
+      }
+    } catch (error) {
+      console.error("Error requacking the post:", error);
+    }
+  };
   return (
     <div className={`${styles.container} ${dark ? styles.dark : ""}`}>
       <div className={styles.avatar}>
@@ -56,17 +95,29 @@ export default function Postagem({ post_id }) {
         <div className={styles.svg}>
           <img
             className={styles.img}
-            src={dark ? "/retweet-dark.svg" : "/retweet-svgrepo-com.svg"}
+            src={
+              requack
+                ? "/retweet-filled.svg"
+                : dark
+                ? "/retweet-dark.svg"
+                : "/retweet-svgrepo-com.svg"
+            }
             alt="Republicar"
+            onClick={handleRequack}
           />
         </div>
         <div className={styles.svg}>
           <img
             className={styles.img}
             src={
-              dark ? "/heart-like-dark.svg" : "/heart-like-svgrepo-com (1).svg"
+              like
+                ? "/heart-filled.svg"
+                : dark
+                ? "/heart-like-dark.svg"
+                : "/heart-like-svgrepo-com (1).svg"
             }
             alt="Gostei"
+            onClick={handleLike}
           />
         </div>
       </div>

@@ -207,6 +207,87 @@ app
         res.status(500).json({ message: "Internal server error" });
       }
     });
+    server.get("/api/data/likes", async (req, res) => {
+      if (!req.session.user) {
+        // Redirect to login page if not authenticated
+        res.status(401).json({ message: "Not authenticated" });
+        // return;
+      }
+      const user_id = await fetchIdBySession(req);
+      // Fetch the number of likes for the given post
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+          // Assuming you have a column named "likes" in the posts table
+        });
+        const [register] = await connection.execute(
+          "SELECT * FROM likes WHERE user_id = ? AND post_id =?",
+          [user_id, req.query.post_id]
+        );
+        if (!register.length) {
+          await connection.execute(
+            "INSERT INTO likes (user_id, post_id) VALUES (?, ?)",
+            [user_id, req.query.post_id]
+            // Assuming you have a table named "likes" and a column named "post_id"
+          );
+          res.status(200).json({ message: "Like is successful!" });
+          // Increase the like count in the posts table
+        } else {
+          await connection.execute(
+            "DELETE FROM likes WHERE user_id =? AND post_id =?",
+            [user_id, req.query.post_id]
+            // Assuming you have a table named "likes" and a column named "post_id"
+          );
+          res.status(200).json({ message: "Like removed successfully!" });
+          // Decrease the like count in the posts table
+        }
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+        // Decrease the like count in the posts table
+      }
+    });
+
+    server.get("/api/data/requacks", async (req, res) => {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const user_id = await fetchIdBySession(req);
+
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        const [register] = await connection.execute(
+          "SELECT * FROM requacks WHERE user_id = ? AND post_id = ?",
+          [user_id, req.query.post_id]
+        );
+        if (!register.length) {
+          await connection.execute(
+            "INSERT INTO requacks (user_id, post_id) VALUES (?, ?)",
+            [user_id, req.query.post_id]
+          );
+          res.status(200).json({ message: "Requack sent successfully!" });
+        } else {
+          await connection.execute(
+            "DELETE FROM requacks WHERE user_id = ? AND post_id = ?",
+            [user_id, req.query.post_id]
+          );
+          res.status(200).json({ message: "Requack removed successfully!" });
+        }
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
     server.get("/api/data/pfp", async (req, res) => {
       try {
         const connection = await mysql.createConnection({
@@ -294,6 +375,51 @@ app
           return res.status(404).json({ message: "Post not found" });
         }
         return res.status(200).json(post[0]);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+    server.get("/api/data/likes-rqs", async (req, res) => {
+      console.log("GET /api/data/likes-rqs");
+      // Requerir autenticação e puxar o id do usuário logado para operação no back-end
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const user_id = await fetchIdBySession(req);
+      const post_id = req.query.post_id; // Assuming post_id is passed as a query parameter
+
+      try {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        // Consultar se o post tem like pelo usuário logado
+        const [likeResult] = await connection.execute(
+          "SELECT likes_id AS id FROM likes WHERE user_id = ? AND post_id = ?",
+          [user_id, post_id]
+        );
+
+        // Consultar se o post tem retweet pelo usuário logado
+        const [requackResult] = await connection.execute(
+          "SELECT requacks_id AS id FROM requacks WHERE user_id = ? AND post_id = ?",
+          [user_id, post_id]
+        );
+
+        connection.end();
+
+        // Criar um json que contém as respostas: o like_id e o requack_id do post se houver, se não houver o json precisa do campo mas ele pode ser null.
+        const response = {
+          like_id: likeResult.length ? likeResult[0].id : null,
+          requack_id: requackResult.length ? requackResult[0].id : null,
+        };
+
+        // Enviar o json para o cliente na resposta
+        res.status(200).json(response);
       } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Internal server error" });
