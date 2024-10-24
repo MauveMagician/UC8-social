@@ -4,9 +4,32 @@ import styles from "./postagens.module.css";
 import { useDarkMode } from "@/app/context/DarkModeContext";
 import FotoPerfil from "./fotoperfil";
 import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function Postagem({ post_id }) {
-  const { dark } = useDarkMode();
+export default function Postagem({ post_id }{ post_id }) {
+  const dark = useDarkMode();
+  const [content, setContent] = useState("");
+  const [user_id, setUserId] = useState("");
+  const [user_name, setUserName] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        //Puxar do banco de dados os dados da postagem
+        const response = await fetch(`/api/data/post?post_id=${post_id}`);
+        const data = await response.json();
+        console.log(data);
+        //Parsear o json com os dados e usar os setters dos useStates para trocar os elementos do componente
+        setContent(data.Content);
+        setUserId(data.user_id);
+        setUserName(data.username);
+      } catch (error) {
+        console.error("Error fetching post data:", error);
+      }
+    };
+    fetchData();
+  }, [post_id]);
+
   const [like, setLike] = useState(false);
   const [requack, setRequack] = useState(false);
   useEffect(() => {
@@ -49,15 +72,15 @@ export default function Postagem({ post_id }) {
   return (
     <div className={`${styles.container} ${dark ? styles.dark : ""}`}>
       <div className={styles.avatar}>
-        <FotoPerfil user_id={1} className={styles.foto} />
+        <FotoPerfil user_id={user_id} className={styles.foto} />
       </div>
       <div className={styles.perfil}>
         <div className={styles.name}>
           <div className={styles.nomedousuario}>
-            <span className={dark ? styles.username : ""}>eminen</span>
+            <span className={dark ? styles.username : ""}>{user_name}</span>
           </div>
           <div className={styles.arrobausuario}>
-            <span className={dark ? styles.arroba : ""}>@eminen</span>
+            <span className={dark ? styles.arroba : ""}>@{user_name}</span>
           </div>
         </div>
         <div className={styles.points}>
@@ -68,10 +91,7 @@ export default function Postagem({ post_id }) {
           />
         </div>
       </div>
-      <div className={`${styles.Mensagem} ${dark ? styles.dark2 : ""}`}>
-        Descubra a beleza das pequenas coisas do dia a dia. Um sorriso, uma
-        flor, ou um pôr do sol podem transformar o seu momento
-      </div>
+      <div className={styles.Mensagem}>{content}</div>
       <div className={styles.interaction}>
         <div className={styles.svg}>
           <img

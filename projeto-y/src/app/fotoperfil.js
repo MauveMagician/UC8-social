@@ -22,7 +22,7 @@ export default function FotoPerfil({ user_id }) {
     if (user_id) {
       fetchPhoto();
     }
-  }, []);
+  }, [user_id]);
   return (
     <>{pfp ? <img src={pfp} alt="Foto do perfil" /> : <p>Loading...</p>}</>
   );
