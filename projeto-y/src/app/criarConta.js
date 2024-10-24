@@ -7,6 +7,7 @@ export default function CriarConta({ setAccount }) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [nome, setNome] = useState("");
+  const [arroba, setArroba] = useState("");
 
   const handleSignUp = async (e) => {
     e.preventDefault();
@@ -16,7 +17,7 @@ export default function CriarConta({ setAccount }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, senha, nome }),
+        body: JSON.stringify({ email, senha, nome, arroba }),
       });
       const data = await response.json();
       if (response.ok) {
@@ -47,6 +48,13 @@ export default function CriarConta({ setAccount }) {
             placeholder="Nome"
             value={nome}
             onChange={(e) => setNome(e.target.value)}
+            className={`${styles.input1} ${dark ? styles.darkinput : ""}`}
+          />
+          <input
+            type="text"
+            placeholder="Arroba"
+            value={arroba}
+            onChange={(e) => setArroba(e.target.value)}
             className={`${styles.input1} ${dark ? styles.darkinput : ""}`}
           />
           <input

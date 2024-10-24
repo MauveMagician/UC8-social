@@ -67,7 +67,7 @@ app
 
     // Sign up route
     server.post("/api/auth/signup", async (req, res) => {
-      const { email, senha, nome } = req.body;
+      const { email, senha, nome, arroba } = req.body;
 
       if (!email || !senha) {
         return res
@@ -96,8 +96,8 @@ app
         const hashedPassword = await hashPassword(senha);
 
         await connection.execute(
-          "INSERT INTO users (email, password, nome) VALUES (?, ?, ?)",
-          [email, hashedPassword, nome]
+          "INSERT INTO users (email, password, nome, arroba, bio) VALUES (?, ?, ?, ?, 'Olá, estou usando o Quacker')",
+          [email, hashedPassword, nome, arroba]
         );
 
         connection.end();
@@ -190,7 +190,7 @@ app
 
         // Query the database for the user with the given handle
         const [user] = await connection.execute(
-          "SELECT * FROM users WHERE nome = ?",
+          "SELECT * FROM users WHERE arroba = ?",
           [handle]
         );
 
