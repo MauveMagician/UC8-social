@@ -9,6 +9,15 @@ const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
+const statement_num_posts =
+  "SELECT COUNT(*) as num_posts FROM posts WHERE user_id = ?";
+
+const statement_num_followers =
+  "SELECT COUNT(*) as num_followers FROM followers WHERE user_id =?";
+
+const statement_num_following =
+  "SELECT COUNT(DISTINCT user_id2) as num_following FROM followers WHERE user_id =?";
+
 const fetchIdBySession = async (req) => {
   const sessionId = req.sessionID; // Get the session ID
 
@@ -380,6 +389,31 @@ app
         res.status(500).json({ message: "Internal server error" });
       }
     });
+
+    server.get("api/data/num_posts", async (req, res) => {
+      console.log("GET /api/data/num_posts");
+      try {
+        // Conectar ao banco de dados
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        const [numPosts] = await connection.execute(statement_num_posts, [
+          user_id,
+        ]);
+
+        connection.end();
+        res.status(200).json({ num_posts: numPosts[0].num_posts });
+      } catch {
+        console.error("Failed to connect to the database");
+        res.status(500).json({ message: "Internal server error" });
+        return;
+      }
+    });
+
     server.get("/api/data/likes-rqs", async (req, res) => {
       console.log("GET /api/data/likes-rqs");
       // Requerir autenticação e puxar o id do usuário logado para operação no back-end

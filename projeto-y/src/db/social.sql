@@ -18,6 +18,4 @@ CREATE TABLE likes(
 );
 CREATE TABLE requacks(requacks_id INT PRIMARY KEY auto_increment, user_id INT, post_id INT, FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE, FOREIGN KEY (post_id) REFERENCES posts (post_id) ON DELETE CASCADE);
 --Criar tabela de seguidores
---Criar a view número de postagens
---Criar a view número de seguidores
---Criar a view número de seguindo
+CREATE TABLE followers(followers_id INT PRIMARY KEY auto_increment, user_id INT, FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE, user_id2 INT, FOREIGN KEY (user_id2) REFERENCES users (user_id) ON DELETE CASCADE);
