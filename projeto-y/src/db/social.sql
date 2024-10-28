@@ -1,3 +1,4 @@
+DROP DATABASE social;
 CREATE DATABASE social;
 USE social;
 DROP TABLE IF EXISTS users;
