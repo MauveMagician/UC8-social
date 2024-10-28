@@ -38,7 +38,21 @@ export default function Conta({ user_id }) {
   return (
     <>
       <div className={styles.planet}>
-        <div className={styles.cabecalho}></div>
+        <div className={styles.cabecalho}>
+          <div className={styles.back}>
+            <img
+              className={styles.cabecalhoimg}
+              src="/back-svgrepo-com.svg"
+            ></img>
+          </div>
+          <div className={styles.nickname}>Eminen_da_vó</div>
+          <div className={styles.config}>
+            <img
+              className={styles.cabecalhoimg}
+              src="/burger-menu-svgrepo-com.svg"
+            ></img>
+          </div>
+        </div>
         <div className={styles.container}>
           <div className={styles.I}>
             <div className={styles.info}>
