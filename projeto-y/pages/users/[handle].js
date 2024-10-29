@@ -1,4 +1,5 @@
 import Conta from "@/app/conta";
+import { DarkModeContextProvider } from "@/app/context/DarkModeContext";
 
 export async function getServerSideProps(context) {
   const { handle } = context.params;
@@ -34,7 +35,9 @@ export default function Contausers({ user }) {
 
   return (
     <>
-      <Conta user_id={user.user_id} />
+      <DarkModeContextProvider>
+        <Conta user_id={user.user_id} />
+      </DarkModeContextProvider>
     </>
   );
 }
