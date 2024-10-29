@@ -97,7 +97,9 @@ export default function Postagem({ post_id }) {
             className={styles.img}
             src={
               requack
-                ? "/retweet-filled.svg"
+                ? dark
+                  ? "/retweet-filled.svg"
+                  : "/retweet-filled-light.svg"
                 : dark
                 ? "/retweet-dark.svg"
                 : "/retweet-svgrepo-com.svg"
@@ -111,7 +113,9 @@ export default function Postagem({ post_id }) {
             className={styles.img}
             src={
               like
-                ? "/heart-filled.svg"
+                ? dark
+                  ? "/heart-filled.svg"
+                  : "/heart-filled-light.svg"
                 : dark
                 ? "/heart-like-dark.svg"
                 : "/heart-like-svgrepo-com (1).svg"
