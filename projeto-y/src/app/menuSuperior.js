@@ -6,7 +6,9 @@ import { useDarkMode } from "./context/DarkModeContext";
 export default function MenuSuperior() {
   const { dark, setDark } = useDarkMode();
   const handleDarkModeToggle = () => {
-    setDark(!dark);
+    const newDarkMode = !dark;
+    setDark(newDarkMode);
+    localStorage.setItem("darkMode", newDarkMode);
   };
   return (
     <div className={`${styles.container} ${dark ? styles.dark : ""}`}>

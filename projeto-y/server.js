@@ -465,41 +465,39 @@ app
 
     //Rota que puxa todos os posts de determinado usuário no banco de dados
     server.get("/api/data/my_posts/", async (req, res) => {
-      //Obtém o id do usuário autenticado
+      const limit = Math.max(0, parseInt(req.query.limit, 10) || 10); // Default limit to 10 if not provided, ensure non-negative
+      const offset = Math.max(0, parseInt(req.query.offset, 10) || 0); // Default offset to 0 if not provided, ensure non-negative
       if (!req.session.user) {
-        //Se o usuário não está autenticado, conectar com o banco de dados
         const connection = await mysql.createConnection({
           host: process.env.DB_HOST,
           user: process.env.DB_USER,
           password: process.env.DB_PASSWORD,
           database: process.env.DB_NAME,
         });
-        //Realizar uma consulta para buscar os últimos 50 quacks feitos por qualquer pessoa e colocar em um array
+
         const [posts] =
           (await connection.execute(
-            "SELECT posts.post_id, posts.post_date FROM posts JOIN users ON posts.user_id = users.user_id ORDER BY posts.post_date DESC LIMIT 50"
+            `SELECT posts.post_id, posts.post_date FROM posts JOIN users ON posts.user_id = users.user_id ORDER BY posts.post_date DESC LIMIT ${limit} OFFSET ${offset}`
           )) || [];
         connection.end();
         res.status(200).json(posts);
-        //Enviar em um json os posts para o cliente, juntamente com o código 200
         return;
       }
+
       const user_id = await fetchIdBySession(req);
       try {
-        //Conectar com o banco de dados
         const connection = await mysql.createConnection({
           host: process.env.DB_HOST,
           user: process.env.DB_USER,
           password: process.env.DB_PASSWORD,
           database: process.env.DB_NAME,
         });
-        //Realizar uma consulta para buscar todos os posts e requacks das pessoas que o usuário segue e colocar em um array ordenado do mais recente para o mais antigo, limitar a um máximo de 50 posts
+
         const [posts] =
           (await connection.execute(
-            "SELECT p.post_id, p.post_date FROM posts p JOIN followers f ON p.user_id = f.user_id2 JOIN users u ON p.user_id = u.user_id LEFT JOIN pfp ON p.user_id = pfp.user_id WHERE f.user_id = ? UNION SELECT p.post_id, p.post_date FROM requacks r JOIN followers f ON r.user_id = f.user_id2 JOIN posts p ON r.post_id = p.post_id JOIN users u ON r.user_id = u.user_id LEFT JOIN pfp ON r.user_id = pfp.user_id WHERE f.user_id = ? ORDER BY post_date DESC LIMIT 50",
+            `SELECT p.post_id, p.post_date FROM posts p JOIN followers f ON p.user_id = f.user_id2 JOIN users u ON p.user_id = u.user_id LEFT JOIN pfp ON p.user_id = pfp.user_id WHERE f.user_id = ? UNION SELECT p.post_id, p.post_date FROM requacks r JOIN followers f ON r.user_id = f.user_id2 JOIN posts p ON r.post_id = p.post_id JOIN users u ON r.user_id = u.user_id LEFT JOIN pfp ON r.user_id = pfp.user_id WHERE f.user_id = ? ORDER BY post_date DESC LIMIT ${limit} OFFSET ${offset}`,
             [user_id, user_id]
           )) || [];
-        //Enviar em um json os posts para o cliente, juntamente com o código 200
         connection.end();
         res.status(200).json(posts);
       } catch (error) {

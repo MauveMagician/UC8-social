@@ -7,9 +7,10 @@ import { useState, useEffect } from "react";
 export default function Timeline({ user_id }) {
   //Criar um array vazio para armazenar as postagens
   const [posts, setPosts] = useState([]);
+  const [offset, setOffset] = useState(0);
   useEffect(() => {
     //Fazer a requisição dos posts de uma pessoa para o servidor e salvar em um array
-    fetch(`/api/data/my_posts`)
+    fetch(`/api/data/my_posts?limit=50&offset=${offset}`)
       .then((response) => response.json())
       .then((data) => setPosts(data))
       .catch((error) => console.error("Error:", error));
