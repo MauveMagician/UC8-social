@@ -74,13 +74,11 @@ export default function Conta({ user_id }) {
         console.error("Error fetching following count:", error);
       }
     };
-    fetchFollowing();
-    fetchFollowers();
-    fetchData();
-
     if (user_id) {
       fetchPhoto();
       fetchFollowing();
+      fetchFollowers();
+      fetchData();
     }
   }, []);
   const handleSeguir = async (event) => {
