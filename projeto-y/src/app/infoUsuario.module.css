@@ -1,0 +1,122 @@
+@import url("https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Ma+Shan+Zheng&family=Mina:wght@400;700&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap");
+
+.container {
+  display: flex;
+  font-family: "Open Sans", sans-serif;
+  font-size: 1rem;
+  max-width: 100%;
+  height: 100vh;
+  background-color: #f4f4f4;
+  position: absolute;
+  top: 0;
+  z-index: 10;
+  flex-direction: column;
+  overflow-y: auto;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+/*containerFoto*/
+.containerFoto {
+  display: flex;
+  width: 100%;
+  height: 40%;
+  position: relative;
+  z-index: 12;
+  overflow: hidden;
+}
+.containerFoto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.close {
+  height: 10vw;
+  width: 10vw;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+.name {
+  position: absolute;
+  bottom: 1vw;
+  left: 2vw;
+  font-size: 1.3rem;
+  font-weight: 1000;
+  text-shadow: 1px 1px 0px #ffd447, -1px -1px 0px #ffd447, -1px 1px 0px #ffd447,
+    1px -1px 0px #ffd447;
+}
+.close img {
+  height: 10vw;
+  width: 10vw;
+}
+.mudafoto {
+  height: 10vw;
+  width: 10vw;
+  background-color: transparent;
+  border: none;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  text-shadow: 1px 1px 0px white, -1px -1px 0px white, -1px 1px 0px white,
+    1px -1px 0px white;
+  font-size: small;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 10px;
+}
+.mudafoto img {
+  color: black;
+  position: absolute;
+}
+
+.img1 {
+  transform: scale(1.15);
+}
+.configuracoes {
+  height: 10vw;
+  width: 10vw;
+  background-color: transparent;
+  border: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  text-shadow: 1px 1px 0px white, -1px -1px 0px white, -1px 1px 0px white,
+    1px -1px 0px white;
+  font-size: small;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 10px;
+}
+.configuracoes img {
+  color: black;
+  position: absolute;
+}
+
+.img2 {
+  transform: scale(1.15);
+}
+/*containerInfo*/
+.containerInfo {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: auto;
+}
+.h3 {
+  margin-left: 4vw;
+}
+.hr {
+  border: 0.1px solid #ffd447;
+  width: auto;
+  margin-left: 4vw;
+}
+.information {
+  width: 100%;
+  margin-left: 4vw;
+}
+.info {
+  font-size: large;
+  font-weight: 600;
+}
