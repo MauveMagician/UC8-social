@@ -16,7 +16,7 @@ export default function Timeline({ user_id }) {
   }, []);
   //Exibir as postagens na tela
   return (
-    <div>
+    <div className={styles.container}>
       {posts.map((post) => (
         <Postagem key={post.post_id} post_id={post.post_id} />
       ))}

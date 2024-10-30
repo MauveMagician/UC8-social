@@ -175,7 +175,7 @@ app
           database: process.env.DB_NAME,
         });
         await connection.execute(
-          "INSERT INTO posts (user_id, content,posts_date) VALUES (?, ?,NOW())",
+          "INSERT INTO posts (user_id, content, post_date) VALUES (?, ?,NOW())",
           [user_id, content]
         );
         connection.end();
@@ -426,7 +426,7 @@ app
         //Realizar uma consulta para buscar todos os posts do usuário e colocar em um array
         const [posts] =
           (await connection.execute(
-            "SELECT * FROM posts WHERE user_id =? ORDER BY posts_date DESC",
+            "SELECT * FROM posts WHERE user_id =? ORDER BY post_date DESC",
             [user_id]
           )) || [];
         //Enviar em um json os posts para o cliente, juntamente com o código 200

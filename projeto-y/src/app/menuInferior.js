@@ -11,7 +11,7 @@ export default function MenuInferior() {
   const [renderLog, setRenderLog] = useState(false);
   const [renderUser, setRenderUser] = useState(false);
   const [renderPost, setRenderPost] = useState(false);
-  const [usuarioLogado, setUsuarioLogado] = useState(true);
+  const [usuarioLogado, setUsuarioLogado] = useState(false);
   return (
     <>
       {renderLog ? <Login setRenderLog={setRenderLog} /> : <></>}
