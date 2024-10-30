@@ -325,6 +325,38 @@ app
         res.status(500).json({ message: "Internal server error" });
       }
     });
+    server.get("/api/data/userinfo", async (req, res) => {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const user_id = await fetchIdBySession(req);
+
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        const [data] = await connection.execute(
+          "SELECT nome, arroba, bio FROM users WHERE user_id = ?",
+          [user_id]
+        );
+
+        connection.end();
+
+        if (data.length === 0) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        const { nome, arroba, bio } = data[0];
+        res.status(200).json({ nome, arroba, bio });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
 
     server.get("/api/data/pfp", async (req, res) => {
       try {

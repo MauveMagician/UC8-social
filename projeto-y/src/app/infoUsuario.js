@@ -1,14 +1,51 @@
+import { useEffect, useState } from "react";
 import styles from "./infoUsuario.module.css";
 import { useDarkMode } from "@/app/context/DarkModeContext";
 
 export default function InfoUsuario({ setRenderUser }) {
   const { dark, setDark } = useDarkMode();
+  const [pfp, setPfp] = useState("");
+  const [nome, setNome] = useState("");
+  const [arroba, setArroba] = useState("");
+  const [bio, setBio] = useState("");
+  useEffect(() => {
+    const fetchPhoto = async () => {
+      try {
+        const response = await fetch(`/api/data/pfp?user_id=${user_id}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch photo");
+        }
+        const blob = await response.blob();
+        const imageUrl = URL.createObjectURL(blob);
+        setPfp(imageUrl);
+      } catch (error) {
+        console.error("Error fetching photo:", error);
+      }
+    };
+    const fetchUserinfo = async () => {
+      try {
+        const response = await fetch(`/api/data/userinfo`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch userinfo");
+        }
+        const data = await response.json();
+        setNome(data.nome);
+        setArroba(data.arroba);
+        setBio(data.bio);
+      } catch (error) {
+        console.error("Error fetching userinfo:", error);
+      }
+    };
+    fetchPhoto();
+    fetchUserinfo();
+  }, []);
+
   return (
     <>
       <div className={`${styles.container} ${dark ? styles.dark : ""}`}>
         <div className={styles.containerFoto}>
           <img src="\gato-32546835.jpg"></img>
-          <div className={styles.name}>eminen</div>
+          <div className={styles.name}>{nome}</div>
           <div className={styles.close} onClick={() => setRenderUser(false)}>
             <img
               className={styles.img}
@@ -35,20 +72,12 @@ export default function InfoUsuario({ setRenderUser }) {
         <div className={styles.containerInfo}>
           <h3 className={styles.h3}>Conta de Usuário</h3>
           <div className={styles.information}>
-            <div className={styles.info}>+01 (23) 45678-9012</div>
-            <p className={styles.tap}>Tap to change phone number</p>
-          </div>
-          <hr className={styles.hr} />
-          <div className={styles.information}>
-            <div className={styles.info}>Email: 123@email.com</div>
+            <div className={styles.info}>@{arroba}</div>
             <p className={styles.tap}>Username</p>
           </div>
           <hr className={styles.hr} />
           <div className={styles.information}>
-            <div className={styles.info}>
-              Entusiasta de tecnologia, explorador de novas ideias e apaixonado
-              por aprender.
-            </div>
+            <div className={styles.info}>{bio}</div>
             <p className={styles.tap}>Bio</p>
           </div>
         </div>
@@ -86,6 +115,13 @@ export default function InfoUsuario({ setRenderUser }) {
               />
             </div>
             <div className={styles.info}>Notificações e sons</div>
+          </div>
+          <hr className={styles.hr} />
+          <div className={styles.settings}>
+            <div className={styles.imgSettings}>
+              <img className={styles.img3} src="\Door.svg" alt="Sair" />
+            </div>
+            <div className={styles.info}>Sair</div>
           </div>
         </div>
       </div>
