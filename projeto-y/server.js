@@ -175,11 +175,41 @@ app
           database: process.env.DB_NAME,
         });
         await connection.execute(
-          "INSERT INTO posts (user_id, content) VALUES (?, ?)",
+          "INSERT INTO posts (user_id, content,posts_date) VALUES (?, ?,NOW())",
           [user_id, content]
         );
         connection.end();
         res.status(201).json({ message: "Post is successful" });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+    server.get("/api/data/follow_check", async (req, res) => {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const user_id = await fetchIdBySession(req);
+      const user_id2 = parseInt(req.query.user_id);
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+        const [register] = await connection.execute(
+          "SELECT * FROM followers WHERE user_id = ? AND user_id2 = ?",
+          [user_id, user_id2]
+        );
+        console.log(register);
+        if (!register.length) {
+          console.log("not following");
+          res.status(200).json({ following: false });
+        } else {
+          console.log("following");
+          res.status(200).json({ following: true });
+        }
       } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Internal server error" });
@@ -259,7 +289,6 @@ app
         // Decrease the like count in the posts table
       }
     });
-
     server.get("/api/data/requacks", async (req, res) => {
       if (!req.session.user) {
         return res.status(401).json({ message: "Not authenticated" });
@@ -339,6 +368,49 @@ app
         res.status(401).json({ message: "Not authenticated" });
       }
     });
+    server.post("/api/data/seguir", async (req, res) => {
+      // Verificar se o usuário é autenticado
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const follower_id = await fetchIdBySession(req);
+      // Obtém o id do usuário seguido pelo handle da requisição usando query
+      const followed_id = req.query.followed_id;
+      try {
+        // Conectar com o banco de dados
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+        // Realizar uma consulta para verificar se o relacionamento já existe
+        const [register] = await connection.execute(
+          "SELECT * FROM followers WHERE user_id = ? AND user_id2 = ?",
+          [follower_id, followed_id]
+        );
+
+        if (!register.length) {
+          // Se não existe, insere o novo relacionamento
+          await connection.execute(
+            "INSERT INTO followers (user_id, user_id2) VALUES (?, ?)",
+            [follower_id, followed_id]
+          );
+          res.status(200).json({ message: "Seguindo com sucesso" });
+        } else {
+          // Se já existe, remove o relacionamento
+          await connection.execute(
+            "DELETE FROM followers WHERE user_id = ? AND user_id2 = ?",
+            [follower_id, followed_id]
+          );
+          res.status(200).json({ message: "Deixou de seguir com sucesso" });
+        }
+        connection.end();
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
     //Rota que puxa todos os posts de determinado usuário no banco de dados
     server.get("/api/data/posts/", async (req, res) => {
       //Obtém o id do usuário pelo handle da requisição usando query
@@ -352,10 +424,11 @@ app
           database: process.env.DB_NAME,
         });
         //Realizar uma consulta para buscar todos os posts do usuário e colocar em um array
-        const [posts] = await connection.execute(
-          "SELECT * FROM posts WHERE user_id =?",
-          [user_id]
-        );
+        const [posts] =
+          (await connection.execute(
+            "SELECT * FROM posts WHERE user_id =? ORDER BY posts_date DESC",
+            [user_id]
+          )) || [];
         //Enviar em um json os posts para o cliente, juntamente com o código 200
         connection.end();
         res.status(200).json(posts);
