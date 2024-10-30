@@ -52,6 +52,42 @@ export default function InfoUsuario({ setRenderUser }) {
             <p className={styles.tap}>Bio</p>
           </div>
         </div>
+        <div className={styles.containerSettings}>
+          <h3 className={styles.h3}>Configurações</h3>
+          <div className={styles.settings}>
+            <div className={styles.imgSettings}>
+              <img
+                className={styles.img3}
+                src="\chat.svg"
+                alt="Configuração de chat"
+              />
+            </div>
+            <div className={styles.info}>Configurações de bate-papo</div>
+          </div>
+          <hr className={styles.hr} />
+          <div className={styles.settings}>
+            <div className={styles.imgSettings}>
+              <img
+                className={styles.img3}
+                src="\lock.svg"
+                alt="Configurações de privacidade e segurança"
+              />
+            </div>
+
+            <div className={styles.info}>Privacidade e Segurança</div>
+          </div>
+          <hr className={styles.hr} />
+          <div className={styles.settings}>
+            <div className={styles.imgSettings}>
+              <img
+                className={styles.img3}
+                src="\bell.svg"
+                alt="Configurações de notificações e sons"
+              />
+            </div>
+            <div className={styles.info}>Notificações e sons</div>
+          </div>
+        </div>
       </div>
     </>
   );
