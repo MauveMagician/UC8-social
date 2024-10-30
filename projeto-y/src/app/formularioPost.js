@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 import styles from "./formularioPost.module.css";
 import { useDarkMode } from "@/app/context/DarkModeContext";
@@ -27,6 +28,8 @@ export default function FormularioPost() {
       }
     } catch (error) {
       console.error("Error submitting post:", error);
+    } finally {
+      location.reload();
     }
   };
 
@@ -42,10 +45,12 @@ export default function FormularioPost() {
           className={`${styles.textarea1} ${dark ? styles.dark2 : ""}`}
           value={postContent}
           onChange={(e) => setPostContent(e.target.value)}
+          maxLength={140}
         ></textarea>
         <button
           type="submit"
           className={`${dark ? styles.dark3 : styles.postar}`}
+          disabled={postContent.trim().length === 0}
         >
           Postar
         </button>

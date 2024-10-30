@@ -8,6 +8,9 @@ import MencoesUsuario from "./mencoesUsuario";
 
 export default function Conta({ user_id }) {
   const [pfp, setPfp] = useState(null);
+  const [postCount, setPostCount] = useState(0);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
   const [seguindo, setSeguindo] = useState(false);
   useEffect(() => {
     const fetchPhoto = async () => {
@@ -23,13 +26,58 @@ export default function Conta({ user_id }) {
         console.error("Error fetching photo:", error);
       }
     };
-    const fetchFollowing = async () => {
-      //Me corrigir amanhã
-      const response = await fetch(`/api/data/follow_check?user_id=${user_id}`);
-      const data = await response.json();
-      const data_following = data.following;
-      setSeguindo(data_following);
+
+    const fetchData = async () => {
+      try {
+        const postCountResponse = await fetch(
+          `/api/data/num_posts?user_id=${user_id}`
+        );
+        if (!postCountResponse.ok) {
+          throw new Error("Failed to fetch post count");
+        }
+        const postCount = await postCountResponse.json();
+        console.log("Post count:", postCount);
+        setPostCount(postCount.num_posts);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
     };
+
+    const fetchFollowers = async () => {
+      try {
+        const response = await fetch(
+          `/api/data/num_followers?user_id=${user_id}`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch follower count");
+        }
+        const followerCount = await response.json();
+        console.log("Follower count:", followerCount);
+        setFollowersCount(followerCount.num_followers);
+      } catch (error) {
+        console.error("Error fetching follower count:", error);
+      }
+    };
+
+    const fetchFollowing = async () => {
+      try {
+        const response = await fetch(
+          `/api/data/num_following?user_id=${user_id}`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch following count");
+        }
+        const followingCount = await response.json();
+        console.log("Following count:", followingCount);
+        setFollowingCount(followingCount.num_following);
+      } catch (error) {
+        console.error("Error fetching following count:", error);
+      }
+    };
+    fetchFollowing();
+    fetchFollowers();
+    fetchData();
+
     if (user_id) {
       fetchPhoto();
       fetchFollowing();
@@ -99,15 +147,15 @@ export default function Conta({ user_id }) {
 
               <div className={styles.myfriends}>
                 <div className={styles.numeros}>
-                  <div className={styles.numero}>12</div>
-                  <div className={styles.palavras}>seguidores</div>
+                  <div className={styles.numero}> {postCount}</div>
+                  <div className={styles.palavras}>Postagens</div>
                 </div>
                 <div className={styles.numeros}>
-                  <div className={styles.numero}>12</div>
+                  <div className={styles.numero}>{followingCount}</div>
                   <div className={styles.palavras}>seguindo</div>
                 </div>
                 <div className={styles.numeros}>
-                  <div className={styles.numero}>12</div>
+                  <div className={styles.numero}>{followersCount}</div>
                   <div className={styles.palavras}>seguidores</div>
                 </div>
               </div>

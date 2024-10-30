@@ -6,7 +6,7 @@ import FotoPerfil from "./fotoperfil";
 import { useEffect, useState } from "react";
 
 export default function Postagem({ post_id }) {
-  const dark = useDarkMode();
+  const { dark, setDark } = useDarkMode();
   const [content, setContent] = useState("");
   const [user_id, setUserId] = useState("");
   const [user_name, setUserName] = useState("");
@@ -97,7 +97,9 @@ export default function Postagem({ post_id }) {
             className={styles.img}
             src={
               requack
-                ? "/retweet-filled.svg"
+                ? dark
+                  ? "/retweet-filled.svg"
+                  : "/retweet-filled-light.svg"
                 : dark
                 ? "/retweet-dark.svg"
                 : "/retweet-svgrepo-com.svg"
@@ -111,7 +113,9 @@ export default function Postagem({ post_id }) {
             className={styles.img}
             src={
               like
-                ? "/heart-filled.svg"
+                ? dark
+                  ? "/heart-filled.svg"
+                  : "/heart-filled-light.svg"
                 : dark
                 ? "/heart-like-dark.svg"
                 : "/heart-like-svgrepo-com (1).svg"
