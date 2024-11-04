@@ -198,28 +198,36 @@ export default function Conta({ user_id }) {
         <div className={styles.container2}>
           <div className={styles.follows}>
             <button className={styles.seguir} onClick={handleSeguir}>
-              <p className={styles.p}>
+              <p
+                className={styles.p}
+                style={{ color: dark ? "white" : "black" }}
+              >
                 {seguindo ? "Deixar de seguir" : "Seguir"}
               </p>
             </button>
-            <button className={styles.seguir}>
+            <button
+              className={`${styles.seguir} ${dark ? styles.seguirescuro : ""}`}
+            >
               <p className={styles.p}>Conversar</p>
             </button>
           </div>
           <div className={`${styles.conteudos} ${dark ? styles.contents : ""}`}>
             <button
+              style={{ color: dark ? "white" : "black" }}
               className={Color[0] ? styles.nodestaque : styles.ydestaque}
               onClick={() => handleClick(0)}
             >
               Quacks
             </button>
             <button
+              style={{ color: dark ? "white" : "black" }}
               className={Color[1] ? styles.nodestaque : styles.ydestaque}
               onClick={() => handleClick(1)}
             >
               Mídias
             </button>
             <button
+              style={{ color: dark ? "white" : "black" }}
               className={Color[2] ? styles.nodestaque : styles.ydestaque}
               onClick={() => handleClick(2)}
             >

@@ -153,6 +153,9 @@
   border: 0.55vw solid #ffd447;
   background: transparent;
 }
+.seguirescuro {
+  color: white;
+}
 .p {
   margin: 0%;
   padding: 0%;

@@ -14,6 +14,10 @@
   background-color: #fff;
 }
 
+.containerdark {
+  background-color: black;
+}
+
 .dark {
   background-color: #000;
 }
