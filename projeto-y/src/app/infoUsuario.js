@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import styles from "./infoUsuario.module.css";
 import { useDarkMode } from "@/app/context/DarkModeContext";
+import UppBio from "./uppdateBio";
 
 export default function InfoUsuario({ setRenderUser }) {
   const { dark, setDark } = useDarkMode();
@@ -39,13 +40,19 @@ export default function InfoUsuario({ setRenderUser }) {
     fetchPhoto();
     fetchUserinfo();
   }, []);
-
+  const [uppBio, setUppBio] = useState(false);
+  const handleClick = () => {
+    setUppBio(!uppBio);
+  };
   return (
     <>
+      {uppBio && <UppBio setBioParent={setBio} setVisible={setUppBio} />}
       <div className={`${styles.container} ${dark ? styles.dark : ""}`}>
         <div className={styles.containerFoto}>
           <img src="\gato-32546835.jpg"></img>
-          <div className={styles.name}>{nome}</div>
+          <div className={styles.name}>
+            {nome} <img src="pencopy.svg" alt="editar Bio" />
+          </div>
           <div className={styles.close} onClick={() => setRenderUser(false)}>
             <img
               className={styles.img}
@@ -73,12 +80,18 @@ export default function InfoUsuario({ setRenderUser }) {
           <h3 className={styles.h3}>Conta de Usuário</h3>
           <div className={styles.information}>
             <div className={styles.info}>@{arroba}</div>
-            <p className={styles.tap}>Username</p>
+            <div className={styles.bio}>
+              <p className={styles.tap}>User</p>
+              <img src="pen.svg" alt="editar User" />
+            </div>
           </div>
           <hr className={styles.hr} />
           <div className={styles.information}>
             <div className={styles.info}>{bio}</div>
-            <p className={styles.tap}>Bio</p>
+            <div className={styles.bio} onClick={handleClick}>
+              <p className={styles.tap}>Bio</p>
+              <img src="pen.svg" alt="editar Bio" />
+            </div>
           </div>
         </div>
         <div className={styles.containerSettings}>

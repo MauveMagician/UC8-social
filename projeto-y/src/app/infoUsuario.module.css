@@ -37,6 +37,9 @@
   right: 0;
 }
 .name {
+  align-items: center;
+  gap: 0.5vh;
+  display: flex;
   position: absolute;
   bottom: 1vw;
   left: 2vw;
@@ -44,6 +47,10 @@
   font-weight: 1000;
   text-shadow: 1px 1px 0px #ffd447, -1px -1px 0px #ffd447, -1px 1px 0px #ffd447,
     1px -1px 0px #ffd447;
+}
+.name img {
+  height: 6vw;
+  width: 6vw;
 }
 .close img {
   height: 10vw;
@@ -119,6 +126,15 @@
   margin-left: 4vw;
   margin-bottom: 1.5vw;
   margin-top: 1.5vw;
+}
+.information img {
+  height: 4vw;
+  width: 4vw;
+}
+.bio {
+  display: flex;
+  align-items: center;
+  gap: 0.5vh;
 }
 .info {
   font-weight: 450;

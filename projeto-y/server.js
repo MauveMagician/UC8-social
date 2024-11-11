@@ -73,7 +73,33 @@ app
 
     // Set up body parser middleware
     server.use(express.json());
-
+    server.put("/api/data/uppdateUser", async (req, res) => {});
+    server.put("/api/data/uppdateArroba", async (req, res) => {});
+    server.put("/api/data/uppdateBio", async (req, res) => {
+      if (!req.session.user) {
+        res.status(401).json({ message: "Not authenticated" });
+      }
+      const { bio } = req.body;
+      const userId = await fetchIdBySession(req);
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+        await connection.execute("UPDATE users SET bio =? WHERE user_id =?", [
+          bio,
+          userId,
+        ]);
+        connection.end();
+        res.json({ message: "Bio updated successfully", bio: bio });
+        res.status(200);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
     // Sign up route
     server.post("/api/auth/signup", async (req, res) => {
       const { email, senha, nome, arroba } = req.body;
