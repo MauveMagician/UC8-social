@@ -47,7 +47,9 @@ export default function UppBio({ setBioParent, setVisible }) {
   const handleButtonClick = (buttonType) => {
     buttonType ? setIsClicked([true, false]) : setIsClicked([false, true]); // Altera o estado do clique
     setTimeout(() => {
-      fetchBio(); // Executa a função fetchBio para salvar
+      if (buttonType) {
+        fetchBio(); // Executa a função fetchBio para salvar
+      }
       setVisible(); // Fecha o componente
     }, 200);
   };

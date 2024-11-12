@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import styles from "./uppdateBio.module.css";
+import styles from "./uppdateUser.module.css";
 
 export default function UppUser({ setUserParent, setVisible }) {
   const [user, setUser] = useState("");
@@ -47,7 +47,9 @@ export default function UppUser({ setUserParent, setVisible }) {
   const handleButtonClick = (buttonType) => {
     buttonType ? setIsClicked([true, false]) : setIsClicked([false, true]); // Altera o estado do clique
     setTimeout(() => {
-      fetchUser(); // Executa a função fetchBio para salvar
+      if (buttonType) {
+        fetchUser(); // Executa a função fetchBio para salvar
+      }
       setVisible(); // Fecha o componente
     }, 200);
   };
@@ -58,15 +60,15 @@ export default function UppUser({ setUserParent, setVisible }) {
 
   return (
     <div className={styles.container}>
-      <p className={styles.p}>Altere sua Bio!</p>
+      <p className={styles.p}>Altere seu Nome!</p>
       <textarea
         ref={textareaRef}
         onChange={handleChange}
         className={styles.input}
         value={user}
-        maxLength="255"
+        maxLength="25"
         rows={1}
-        placeholder="Digite sua bio..."
+        placeholder="Digite sua Nome..."
       />
 
       <div className={styles.buttons}>
