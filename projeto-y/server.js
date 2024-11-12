@@ -73,7 +73,81 @@ app
 
     // Set up body parser middleware
     server.use(express.json());
-
+    server.put("/api/data/uppdateUser", async (req, res) => {
+      if (!req.session.user) {
+        res.status(401).json({ message: "Not authenticated" });
+      }
+      const { user } = req.body;
+      const userId = await fetchIdBySession(req);
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+        await connection.execute("UPDATE users SET nome =? WHERE user_id =?", [
+          user,
+          userId,
+        ]);
+        connection.end();
+        res.json({ message: "Bio updated successfully", user: user });
+        res.status(200);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+    server.put("/api/data/uppdateArroba", async (req, res) => {
+      if (!req.session.user) {
+        res.status(401).json({ message: "Not authenticated" });
+      }
+      const { arroba } = req.body;
+      const userId = await fetchIdBySession(req);
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+        await connection.execute(
+          "UPDATE users SET arroba =? WHERE user_id =?",
+          [arroba, userId]
+        );
+        connection.end();
+        res.json({ message: "Bio updated successfully", arroba: arroba });
+        res.status(200);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+    server.put("/api/data/uppdateBio", async (req, res) => {
+      if (!req.session.user) {
+        res.status(401).json({ message: "Not authenticated" });
+      }
+      const { bio } = req.body;
+      const userId = await fetchIdBySession(req);
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+        await connection.execute("UPDATE users SET bio =? WHERE user_id =?", [
+          bio,
+          userId,
+        ]);
+        connection.end();
+        res.json({ message: "Bio updated successfully", bio: bio });
+        res.status(200);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
     // Sign up route
     server.post("/api/auth/signup", async (req, res) => {
       const { email, senha, nome, arroba } = req.body;
@@ -320,6 +394,38 @@ app
           );
           res.status(200).json({ message: "Requack removed successfully!" });
         }
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+    server.get("/api/data/userinfo", async (req, res) => {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const user_id = await fetchIdBySession(req);
+
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        const [data] = await connection.execute(
+          "SELECT nome, arroba, bio FROM users WHERE user_id = ?",
+          [user_id]
+        );
+
+        connection.end();
+
+        if (data.length === 0) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        const { nome, arroba, bio } = data[0];
+        res.status(200).json({ nome, arroba, bio });
       } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Internal server error" });
