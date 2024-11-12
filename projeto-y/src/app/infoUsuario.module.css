@@ -7,14 +7,46 @@
   max-width: 100%;
   height: 100vh;
   background-color: #f4f4f4;
-  position: absolute;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 10;
   flex-direction: column;
   overflow-y: auto;
   box-sizing: border-box;
   overflow-x: hidden;
+  transform: translateY(100%);
+  transition: transform 0.3s ease-out;
+  opacity: 0; /* Inicialmente invisível */
 }
+
+/* Nova classe para quando o componente estiver visível */
+.container.visible {
+  transform: translateY(0);
+  opacity: 1; /* Totalmente visível */
+  transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+/* Animação de entrada */
+@keyframes slideIn {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Aplicar animação quando visível */
+.container.visible {
+  animation: slideIn 0.5s ease-out forwards;
+}
+
+/* Restante do seu CSS permanece o mesmo */
 /*containerFoto*/
 .containerFoto {
   display: flex;

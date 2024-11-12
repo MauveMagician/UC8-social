@@ -61,7 +61,11 @@ export default function InfoUsuario({ setRenderUser }) {
         <UppArroba setArrobaParent={setArroba} setVisible={setUppArroba} />
       )}
       {uppUser && <UppUser setUserParent={setNome} setVisible={setUppUser} />}
-      <div className={`${styles.container} ${dark ? styles.dark : ""}`}>
+      <div
+        className={`${styles.container} ${dark ? styles.dark : ""} ${
+          styles.visible
+        }`}
+      >
         <div className={styles.containerFoto}>
           <img src="\gato-32546835.jpg"></img>
           <div className={styles.name} onClick={handleClickUser}>
@@ -80,14 +84,6 @@ export default function InfoUsuario({ setRenderUser }) {
               alt="sombra de mudar foto"
             />
             <img src="\camera-svgrepo-com.svg" alt="mudar foto" />
-          </button>
-          <button className={styles.configuracoes}>
-            <img
-              className={styles.img2}
-              src="\cogyellow.svg"
-              alt="sombra de configurações"
-            />
-            <img src="\cog.svg" alt="Configurações" />
           </button>
         </div>
         <div className={styles.containerInfo}>
