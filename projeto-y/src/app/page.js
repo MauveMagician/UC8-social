@@ -12,7 +12,7 @@ export default function Home() {
     <>
       <DarkModeContextProvider>
         <MenuSuperior />
-        <Postagem post_id={1} />
+        <Timeline user_id={1} />
         <MenuInferior />
       </DarkModeContextProvider>
     </>

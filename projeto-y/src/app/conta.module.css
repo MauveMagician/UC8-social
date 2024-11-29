@@ -5,6 +5,12 @@
   align-items: center;
   justify-content: center;
 }
+
+.containerescuro {
+  background-color: #000;
+  color: white;
+}
+
 /* cabecalho*/
 .cabecalho {
   display: flex;
@@ -14,6 +20,12 @@
   height: 15vw;
   background-color: #f5f5f5;
 }
+
+.cabecalhoescuro {
+  background-color: #000;
+  color: white;
+}
+
 .nickname {
   width: auto;
   font-size: larger;
@@ -39,11 +51,23 @@
   align-items: center;
   gap: 50px;
 }
+
+.containerdark {
+  background-color: #000;
+  color: white;
+}
+
 .I {
   display: flex;
   flex-direction: column;
   width: 90%;
 }
+
+.Idark {
+  background-color: #000;
+  color: white;
+}
+
 .postagens {
   height: 10vw;
   display: flex;
@@ -55,6 +79,17 @@
   align-items: center;
   width: 100%;
 }
+
+.infodark {
+  background-color: #000;
+  color: white;
+}
+
+.myfriendsdark {
+  background-color: #000;
+  color: white;
+}
+
 .foto {
   height: 10vw;
   width: 12%;
@@ -65,6 +100,7 @@
 .perfil {
   width: 100%;
 }
+
 .bio {
   height: 15vw;
   display: flex;
@@ -83,6 +119,11 @@
   justify-content: center;
   align-items: center;
 }
+.numberdark {
+  background-color: #000;
+  color: white;
+}
+
 /*container2*/
 .container2 {
   display: flex;
@@ -111,6 +152,9 @@
   border-radius: 8px;
   border: 0.55vw solid #ffd447;
   background: transparent;
+}
+.seguirescuro {
+  color: white;
 }
 .p {
   margin: 0%;

@@ -249,7 +249,7 @@ app
           database: process.env.DB_NAME,
         });
         await connection.execute(
-          "INSERT INTO posts (user_id, content,posts_date) VALUES (?, ?,NOW())",
+          "INSERT INTO posts (user_id, content, post_date) VALUES (?, ?,NOW())",
           [user_id, content]
         );
         connection.end();
@@ -532,7 +532,7 @@ app
         //Realizar uma consulta para buscar todos os posts do usuário e colocar em um array
         const [posts] =
           (await connection.execute(
-            "SELECT * FROM posts WHERE user_id =? ORDER BY posts_date DESC",
+            "SELECT * FROM posts WHERE user_id =? ORDER BY post_date DESC",
             [user_id]
           )) || [];
         //Enviar em um json os posts para o cliente, juntamente com o código 200
@@ -543,6 +543,75 @@ app
         res.status(500).json({ message: "Internal server error" });
       }
     });
+    server.get("/api/data/post/", async (req, res) => {
+      const post_id = req.query.post_id;
+      try {
+        //Conectar ao banco de dados
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+        //Realizar uma consulta para buscar um post post pelo id e colocar em um array
+        const [post] = await connection.execute(
+          "SELECT posts.Content,posts.user_id,users.nome AS username FROM posts,users WHERE post_id = ? AND posts.user_id = users.user_id",
+          [post_id]
+        );
+        connection.end();
+        if (post.length === 0) {
+          return res.status(404).json({ message: "Post not found" });
+        }
+        return res.status(200).json(post[0]);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
+    //Rota que puxa todos os posts de determinado usuário no banco de dados
+    server.get("/api/data/my_posts/", async (req, res) => {
+      const limit = Math.max(0, parseInt(req.query.limit, 10) || 10); // Default limit to 10 if not provided, ensure non-negative
+      const offset = Math.max(0, parseInt(req.query.offset, 10) || 0); // Default offset to 0 if not provided, ensure non-negative
+      if (!req.session.user) {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        const [posts] =
+          (await connection.execute(
+            `SELECT posts.post_id, posts.post_date FROM posts JOIN users ON posts.user_id = users.user_id ORDER BY posts.post_date DESC LIMIT ${limit} OFFSET ${offset}`
+          )) || [];
+        connection.end();
+        res.status(200).json(posts);
+        return;
+      }
+
+      const user_id = await fetchIdBySession(req);
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        const [posts] =
+          (await connection.execute(
+            `SELECT p.post_id, p.post_date FROM posts p JOIN followers f ON p.user_id = f.user_id2 JOIN users u ON p.user_id = u.user_id LEFT JOIN pfp ON p.user_id = pfp.user_id WHERE f.user_id = ? UNION SELECT p.post_id, p.post_date FROM requacks r JOIN followers f ON r.user_id = f.user_id2 JOIN posts p ON r.post_id = p.post_id JOIN users u ON r.user_id = u.user_id LEFT JOIN pfp ON r.user_id = pfp.user_id WHERE f.user_id = ? ORDER BY post_date DESC LIMIT ${limit} OFFSET ${offset}`,
+            [user_id, user_id]
+          )) || [];
+        connection.end();
+        res.status(200).json(posts);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
     server.get("/api/data/post/", async (req, res) => {
       const post_id = req.query.post_id;
       try {

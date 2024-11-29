@@ -5,6 +5,7 @@ import "./globals.css";
 import PostsUsuario from "./postsUsuario";
 import MidiasUsuario from "./midiasUsuario";
 import MencoesUsuario from "./mencoesUsuario";
+import { useDarkMode } from "./context/DarkModeContext";
 
 export default function Conta({ user_id }) {
   const [pfp, setPfp] = useState(null);
@@ -12,6 +13,7 @@ export default function Conta({ user_id }) {
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [seguindo, setSeguindo] = useState(false);
+  const { dark, setDark } = useDarkMode();
   useEffect(() => {
     const fetchPhoto = async () => {
       try {
@@ -116,25 +118,33 @@ export default function Conta({ user_id }) {
   };
   return (
     <>
-      <div className={styles.planet}>
-        <div className={styles.cabecalho}>
-          <div className={styles.back}>
+      <div className={`${styles.planet} ${dark ? styles.containerescuro : ""}`}>
+        <div
+          className={`${styles.cabecalho} ${
+            dark ? styles.cabecalhoescuro : ""
+          }`}
+        >
+          <div className={`${styles.back} ${dark ? styles.backescuro : ""}`}>
             <img
               className={styles.cabecalhoimg}
-              src="/back-svgrepo-com.svg"
+              src={dark ? "/back-light.svg" : "back-svgrepo-com.svg"}
             ></img>
           </div>
           <div className={styles.nickname}>Eminen_da_vó</div>
           <div className={styles.config}>
             <img
               className={styles.cabecalhoimg}
-              src="/burger-menu-svgrepo-com.svg"
+              src={
+                dark ? "/burgermenu-light.svg" : "/burger-menu-svgrepo-com.svg"
+              }
             ></img>
           </div>
         </div>
-        <div className={styles.container}>
-          <div className={styles.I}>
-            <div className={styles.info}>
+        <div
+          className={`${styles.container} ${dark ? styles.containerdark : ""}`}
+        >
+          <div className={`${styles.I} ${dark ? styles.Idark : ""}`}>
+            <div className={`${styles.info} ${dark ? styles.infodark : ""}`}>
               <div className={styles.foto}>
                 {pfp ? (
                   <img src={pfp} className={styles.img} alt="Foto do perfil" />
@@ -143,22 +153,38 @@ export default function Conta({ user_id }) {
                 )}
               </div>
 
-              <div className={styles.myfriends}>
-                <div className={styles.numeros}>
+              <div
+                className={`${styles.myfriends} ${
+                  dark ? styles.myfriendsdark : ""
+                }`}
+              >
+                <div
+                  className={`${styles.numeros} ${
+                    dark ? styles.numberdark : ""
+                  }`}
+                >
                   <div className={styles.numero}> {postCount}</div>
                   <div className={styles.palavras}>Postagens</div>
                 </div>
-                <div className={styles.numeros}>
+                <div
+                  className={`${styles.numeros} ${
+                    dark ? styles.numberdark : ""
+                  }`}
+                >
                   <div className={styles.numero}>{followingCount}</div>
                   <div className={styles.palavras}>seguindo</div>
                 </div>
-                <div className={styles.numeros}>
+                <div
+                  className={`${styles.numeros} ${
+                    dark ? styles.numberdark : ""
+                  }`}
+                >
                   <div className={styles.numero}>{followersCount}</div>
                   <div className={styles.palavras}>seguidores</div>
                 </div>
               </div>
             </div>
-            <div className={styles.perfil}>
+            <div className={`${styles.perfil} ${dark ? styles.prophile : ""}`}>
               <div className={styles.nome}>Eminen</div>
               <div className={styles.email}>email</div>
             </div>
@@ -172,28 +198,36 @@ export default function Conta({ user_id }) {
         <div className={styles.container2}>
           <div className={styles.follows}>
             <button className={styles.seguir} onClick={handleSeguir}>
-              <p className={styles.p}>
+              <p
+                className={styles.p}
+                style={{ color: dark ? "white" : "black" }}
+              >
                 {seguindo ? "Deixar de seguir" : "Seguir"}
               </p>
             </button>
-            <button className={styles.seguir}>
+            <button
+              className={`${styles.seguir} ${dark ? styles.seguirescuro : ""}`}
+            >
               <p className={styles.p}>Conversar</p>
             </button>
           </div>
-          <div className={styles.conteudos}>
+          <div className={`${styles.conteudos} ${dark ? styles.contents : ""}`}>
             <button
+              style={{ color: dark ? "white" : "black" }}
               className={Color[0] ? styles.nodestaque : styles.ydestaque}
               onClick={() => handleClick(0)}
             >
               Quacks
             </button>
             <button
+              style={{ color: dark ? "white" : "black" }}
               className={Color[1] ? styles.nodestaque : styles.ydestaque}
               onClick={() => handleClick(1)}
             >
               Mídias
             </button>
             <button
+              style={{ color: dark ? "white" : "black" }}
               className={Color[2] ? styles.nodestaque : styles.ydestaque}
               onClick={() => handleClick(2)}
             >
