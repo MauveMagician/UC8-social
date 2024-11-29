@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useState } from "react";
 import styles from "./infoUsuario.module.css";
 import { useDarkMode } from "@/app/context/DarkModeContext";
@@ -67,6 +68,19 @@ export default function InfoUsuario({ setRenderUser }) {
       setRenderUser(false);
       setIsClosing(false);
     }, 500); // Espera a animação terminar antes de fechar completamente
+  };
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("/api/logout", { method: "POST" });
+      if (response.ok) {
+        localStorage.removeItem("user");
+        window.location.href = "/";
+      } else {
+        console.error("Falha ao fazer logout");
+      }
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error);
+    }
   };
 
   // Remove this line as it's not needed in this context
@@ -158,7 +172,7 @@ export default function InfoUsuario({ setRenderUser }) {
             <div className={styles.info}>Notificações e sons</div>
           </div>
           <hr className={styles.hr} />
-          <div className={styles.settings}>
+          <div className={styles.settings} onClick={handleLogout}>
             <div className={styles.imgSettings}>
               <img className={styles.img3} src="\Door.svg" alt="Sair" />
             </div>

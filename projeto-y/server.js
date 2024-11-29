@@ -235,6 +235,15 @@ app
       }
     });
 
+    server.post("/api/logout", async (req, res) => {
+      req.session.destroy((err) => {
+        if (err) {
+          return res.status(500).json({ message: "Failed to log out" });
+        }
+        res.status(200).json({ message: "Logout successful" });
+      });
+    });
+
     server.post("/api/data/post", async (req, res) => {
       const { content } = req.body;
       if (!req.session.user) {
@@ -601,8 +610,23 @@ app
 
         const [posts] =
           (await connection.execute(
-            `SELECT p.post_id, p.post_date FROM posts p JOIN followers f ON p.user_id = f.user_id2 JOIN users u ON p.user_id = u.user_id LEFT JOIN pfp ON p.user_id = pfp.user_id WHERE f.user_id = ? UNION SELECT p.post_id, p.post_date FROM requacks r JOIN followers f ON r.user_id = f.user_id2 JOIN posts p ON r.post_id = p.post_id JOIN users u ON r.user_id = u.user_id LEFT JOIN pfp ON r.user_id = pfp.user_id WHERE f.user_id = ? ORDER BY post_date DESC LIMIT ${limit} OFFSET ${offset}`,
-            [user_id, user_id]
+            `SELECT p.post_id, p.post_date 
+             FROM posts p 
+             LEFT JOIN followers f ON p.user_id = f.user_id2 
+             JOIN users u ON p.user_id = u.user_id 
+             LEFT JOIN pfp ON p.user_id = pfp.user_id 
+             WHERE f.user_id = ? OR p.user_id = ?
+             UNION 
+             SELECT p.post_id, p.post_date 
+             FROM requacks r 
+             JOIN followers f ON r.user_id = f.user_id2 
+             JOIN posts p ON r.post_id = p.post_id 
+             JOIN users u ON r.user_id = u.user_id 
+             LEFT JOIN pfp ON r.user_id = pfp.user_id 
+             WHERE f.user_id = ? 
+             ORDER BY post_date DESC 
+             LIMIT ${limit} OFFSET ${offset}`,
+            [user_id, user_id, user_id]
           )) || [];
         connection.end();
         res.status(200).json(posts);

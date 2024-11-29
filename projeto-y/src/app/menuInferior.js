@@ -41,19 +41,19 @@ export default function MenuInferior() {
       {renderUser ? <InfoUsuario setRenderUser={setRenderUser} /> : <></>}
       <div className={`${styles.container} ${dark ? styles.dark : ""}`}>
         <button className={styles.mais}>
-          <img src={dark ? "/burgermenu-dark.svg" : "/burgermenu.svg"}></img>
+          <img src={dark ? "/burgermenu-light.svg" : "/burgermenu.svg"}></img>
         </button>
         <button className={styles.trends}>
-          <img src={dark ? "/planet-dark.svg" : "/planet.svg"}></img>
+          <img src={dark ? "/trend copy.svg" : "/trend.svg"}></img>
         </button>
         <button
           className={styles.digitar}
           onClick={() => setRenderPost(!renderPost)}
         >
-          <img src={dark ? "/notepadlight.svg" : "/notepaddark.svg"}></img>
+          <img src={dark ? "/penadepato.svg" : "/penadepato copy.svg"}></img>
         </button>
         <button className={styles.batepapo}>
-          <img src={dark ? "/speechlight.svg" : "/speechdark.svg"}></img>
+          <img src={dark ? "/message.svg" : "/message copy.svg"}></img>
         </button>
         <button
           className={styles.conta}
