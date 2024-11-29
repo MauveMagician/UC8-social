@@ -54,6 +54,23 @@ export default function InfoUsuario({ setRenderUser }) {
   const handleClick = () => {
     setUppBio(!uppBio);
   };
+  const [isClosing, setIsClosing] = useState(false);
+
+  useEffect(() => {
+    // Reset isClosing when the component is rendered
+    setIsClosing(false);
+  }, []);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setRenderUser(false);
+      setIsClosing(false);
+    }, 500); // Espera a animação terminar antes de fechar completamente
+  };
+
+  // Remove this line as it's not needed in this context
+  // if (!isOpen && !isClosing) return null;
   return (
     <>
       {uppBio && <UppBio setBioParent={setBio} setVisible={setUppBio} />}
@@ -64,27 +81,28 @@ export default function InfoUsuario({ setRenderUser }) {
       <div
         className={`${styles.container} ${dark ? styles.dark : ""} ${
           styles.visible
-        }`}
+        } ${isClosing ? styles.closing : ""}`}
       >
         <div className={styles.containerFoto}>
           <img src="\gato-32546835.jpg"></img>
           <div className={styles.name} onClick={handleClickUser}>
             {nome} <img src="pencopy.svg" alt="editar nome" />
           </div>
-          <div className={styles.close} onClick={() => setRenderUser(false)}>
+          <div className={styles.close} onClick={handleClose}>
+            <img className={styles.img4} src="/downyellow.svg" />
             <img
               className={styles.img}
-              src={dark ? "/closebutton-dark.svg" : "/closebutton.svg"}
-            ></img>
+              src={dark ? "/downwhite.svg" : "/down.svg"}
+            />
           </div>
-          <button className={styles.mudafoto}>
+          <div className={styles.mudafoto}>
             <img
               className={styles.img1}
               src="\camera-white.svg"
               alt="sombra de mudar foto"
             />
             <img src="\camera-svgrepo-com.svg" alt="mudar foto" />
-          </button>
+          </div>
         </div>
         <div className={styles.containerInfo}>
           <h3 className={styles.h3}>Conta de Usuário</h3>
