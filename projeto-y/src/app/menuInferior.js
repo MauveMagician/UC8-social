@@ -1,6 +1,6 @@
 "use client";
 import styles from "./menuInferior.module.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Login from "./login";
 import FormularioPost from "@/app/formularioPost";
 import { useDarkMode } from "./context/DarkModeContext";
@@ -12,6 +12,28 @@ export default function MenuInferior() {
   const [renderUser, setRenderUser] = useState(false);
   const [renderPost, setRenderPost] = useState(false);
   const [usuarioLogado, setUsuarioLogado] = useState(false);
+  useEffect(() => {
+    const checkUserSession = async () => {
+      try {
+        const response = await fetch("/api/auth/session");
+        if (response.ok) {
+          const data = await response.json();
+          if (data.user) {
+            setUsuarioLogado(true);
+          } else {
+            setUsuarioLogado(false);
+          }
+        } else {
+          setUsuarioLogado(false);
+        }
+      } catch (error) {
+        console.error("Error checking user session:", error);
+        setUsuarioLogado(false);
+      }
+    };
+
+    checkUserSession();
+  }, []);
   return (
     <>
       {renderLog ? <Login setRenderLog={setRenderLog} /> : <></>}

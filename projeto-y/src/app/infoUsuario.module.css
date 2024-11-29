@@ -37,6 +37,9 @@
   right: 0;
 }
 .name {
+  align-items: center;
+  gap: 0.5vh;
+  display: flex;
   position: absolute;
   bottom: 1vw;
   left: 2vw;
@@ -44,6 +47,10 @@
   font-weight: 1000;
   text-shadow: 1px 1px 0px #ffd447, -1px -1px 0px #ffd447, -1px 1px 0px #ffd447,
     1px -1px 0px #ffd447;
+}
+.name img {
+  height: 6vw;
+  width: 6vw;
 }
 .close img {
   height: 10vw;
@@ -103,6 +110,8 @@
   flex-direction: column;
   width: 100%;
   height: auto;
+  padding-top: 5vw;
+  box-shadow: 0 4px 8px rgba(184, 184, 184, 0.1);
 }
 .h3 {
   margin-left: 4vw;
@@ -115,8 +124,46 @@
 .information {
   width: 100%;
   margin-left: 4vw;
+  margin-bottom: 1.5vw;
+  margin-top: 1.5vw;
+}
+.information img {
+  height: 4vw;
+  width: 4vw;
+}
+.bio {
+  display: flex;
+  align-items: center;
+  gap: 0.5vh;
 }
 .info {
-  font-size: large;
-  font-weight: 600;
+  font-weight: 450;
+}
+.tap {
+  font-size: medium;
+  font-weight: 300;
+  color: #808080;
+}
+/*containerSettings*/
+.containerSettings {
+  margin-top: 5vw;
+  width: 100%;
+  height: auto;
+  box-shadow: 0 -4px 8px rgba(184, 184, 184, 0.2);
+}
+.settings {
+  display: flex;
+  height: auto;
+  width: 100%;
+  margin-left: 4vw;
+  gap: 1vw;
+  margin-bottom: 1.5vw;
+  margin-top: 1.5vw;
+}
+.imgSettings {
+  height: 5.5vw;
+  width: 5.5vw;
+}
+.img3 {
+  height: 100%;
 }
