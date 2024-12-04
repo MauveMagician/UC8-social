@@ -24,17 +24,21 @@ export default function Notificacoes() {
       .catch((error) => console.error("Error:", error));
   }, []);
 
-  const handleNotificationClick = (id) => {
-    const updateNotifications = notifications.map((notification) =>
-      notification.id === id ? { ...notification, fadeOut: true } : notification
-    );
-    setNotifications(updateNotifications);
+  const handleNotificationClick = async (id) => {
+    try {
+      const response = await fetch(`/api/data/notification/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-    setTimeout(() => {
-      setNotifications((prevNotifications) =>
-        prevNotifications.filter((notification) => notification.id !== id)
-      );
-    }, 300);
+      if (!response.ok) {
+        throw new Error("Failed to clear notification");
+      }
+    } catch (error) {
+      console.error("Error clearing notification:", error);
+    }
   };
 
   const handleClearAll = async () => {
@@ -82,14 +86,21 @@ export default function Notificacoes() {
             {notifications.map((notification) => (
               <Link
                 style={{ textDecoration: "none" }}
-                href={`/posts/${notification.postId}`}
+                href={""}
                 key={notification.notification_id}
+                onClick={async (e) => {
+                  e.preventDefault(); // Prevent immediate navigation
+                  await handleNotificationClick(notification.notificationId);
+                  // Navigate after a short delay to allow the notification to be marked as read
+                  setTimeout(() => {
+                    window.location.href = `/posts/${notification.postId}`;
+                  }, 300);
+                }}
               >
                 <div
                   className={`${styles.notificationitem} ${
-                    notification.fadeOut ? styles.fadeout : true
-                  } : notification`}
-                  onClick={() => handleNotificationClick(notification.id)}
+                    notification.fadeOut ? styles.fadeout : ""
+                  }`}
                 >
                   <NotificacoesItem
                     userImage={notification.userImage}
