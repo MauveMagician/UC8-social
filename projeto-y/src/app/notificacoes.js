@@ -16,6 +16,8 @@ export default function Notificacoes() {
         const formattedNotifications = data.map((notification) => ({
           ...notification,
           userName: notification.actor_name,
+          postId: notification.post_id,
+          notificationId: notification.notification_id,
         }));
         setNotifications(formattedNotifications);
       })
@@ -35,12 +37,28 @@ export default function Notificacoes() {
     }, 300);
   };
 
-  const handleClearAll = () => {
-    setClearingAll(true);
-    setTimeout(() => {
-      setNotifications([]);
-      setClearingAll(false);
-    }, 500);
+  const handleClearAll = async () => {
+    try {
+      const response = await fetch("/api/data/clear_notifications", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to clear notifications");
+      }
+
+      setClearingAll(true);
+      setTimeout(() => {
+        setNotifications([]);
+        setClearingAll(false);
+      }, 500);
+    } catch (error) {
+      console.error("Error clearing notifications:", error);
+      // Optionally, you can add error handling UI here
+    }
   };
 
   return (
