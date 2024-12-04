@@ -1,9 +1,28 @@
 const express = require("express");
+const multer = require("multer");
 const next = require("next");
 const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
 const mysql = require("mysql2/promise");
 const { verifyPassword, hashPassword } = require("./src/lib/auth");
+const fs = require("fs");
+const path = require("path");
+
+const pfpUploadPath =
+  process.env.PFP_UPLOAD_PATH || path.join(__dirname, "pfp");
+const uploadDir = path.join(__dirname, "pfp");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, pfpUploadPath);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+const upload = multer({ storage: storage });
 
 const dev = process.env.NODE_ENV !== "production";
 const app = next({ dev });
@@ -28,6 +47,15 @@ const fetchIdBySession = async (req) => {
     database: process.env.DB_NAME,
   });
 
+  const pool = mysql.createPool({
+    host: process.env.DB_HOST, // Altere para o seu host
+    user: process.env.DB_USER, // Altere para o seu usuário
+    password: process.env.DB_PASSWORD, // Altere para a sua senha
+    database: process.env.DB_NAME, // Altere para o nome do seu banco
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+  });
   // Fetch the session data from the sessions table
   const [rows] = await connection.execute(
     "SELECT data FROM sessions WHERE session_id = ?",
@@ -43,9 +71,6 @@ const fetchIdBySession = async (req) => {
   connection.end();
   return rows2[0].user_id;
 };
-
-const fs = require("fs");
-const path = require("path");
 
 app
   .prepare()
@@ -70,7 +95,7 @@ app
         cookie: { secure: !dev },
       })
     );
-
+    server.use("/pfp", express.static(pfpUploadPath));
     // Set up body parser middleware
     server.use(express.json());
     server.put("/api/data/uppdateUser", async (req, res) => {
@@ -233,6 +258,67 @@ app
         console.error(error);
         res.status(500).json({ message: "Internal server error" });
       }
+    });
+    server.post("/api/upload-pfp", upload.single("photo"), async (req, res) => {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      const photoPath = path.join(pfpUploadPath, req.file.filename);
+      const userId = await fetchIdBySession(req);
+
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        // Verifica se já existe uma entrada para o usuário na tabela pfp
+        const [existingPhoto] = await connection.execute(
+          "SELECT * FROM pfp WHERE user_id = ?",
+          [userId]
+        );
+
+        if (existingPhoto.length > 0) {
+          // Atualiza a foto de perfil existente
+          await connection.execute(
+            "UPDATE pfp SET photo = ? WHERE user_id = ?",
+            [photoPath, userId]
+          );
+        } else {
+          // Insere uma nova entrada se não existir
+          await connection.execute(
+            "INSERT INTO pfp (user_id, photo) VALUES (?, ?)",
+            [userId, photoPath]
+          );
+        }
+
+        connection.end();
+
+        console.log("Photo path saved in database:", photoPath);
+
+        res.status(200).json({
+          message: "Profile photo uploaded and saved successfully",
+          photoPath: `/pfp/${req.file.filename}`,
+        });
+      } catch (error) {
+        console.error("Error uploading and saving profile photo:", error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+    server.post("/api/logout", async (req, res) => {
+      req.session.destroy((err) => {
+        if (err) {
+          return res.status(500).json({ message: "Failed to log out" });
+        }
+        res.status(200).json({ message: "Logout successful" });
+      });
     });
 
     server.post("/api/data/post", async (req, res) => {
@@ -695,8 +781,23 @@ app
 
         const [posts] =
           (await connection.execute(
-            `SELECT p.post_id, p.post_date FROM posts p JOIN followers f ON p.user_id = f.user_id2 JOIN users u ON p.user_id = u.user_id LEFT JOIN pfp ON p.user_id = pfp.user_id WHERE f.user_id = ? UNION SELECT p.post_id, p.post_date FROM requacks r JOIN followers f ON r.user_id = f.user_id2 JOIN posts p ON r.post_id = p.post_id JOIN users u ON r.user_id = u.user_id LEFT JOIN pfp ON r.user_id = pfp.user_id WHERE f.user_id = ? ORDER BY post_date DESC LIMIT ${limit} OFFSET ${offset}`,
-            [user_id, user_id]
+            `SELECT p.post_id, p.post_date 
+             FROM posts p 
+             LEFT JOIN followers f ON p.user_id = f.user_id2 
+             JOIN users u ON p.user_id = u.user_id 
+             LEFT JOIN pfp ON p.user_id = pfp.user_id 
+             WHERE f.user_id = ? OR p.user_id = ?
+             UNION 
+             SELECT p.post_id, p.post_date 
+             FROM requacks r 
+             JOIN followers f ON r.user_id = f.user_id2 
+             JOIN posts p ON r.post_id = p.post_id 
+             JOIN users u ON r.user_id = u.user_id 
+             LEFT JOIN pfp ON r.user_id = pfp.user_id 
+             WHERE f.user_id = ? 
+             ORDER BY post_date DESC 
+             LIMIT ${limit} OFFSET ${offset}`,
+            [user_id, user_id, user_id]
           )) || [];
         connection.end();
         res.status(200).json(posts);

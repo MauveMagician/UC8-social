@@ -1,4 +1,5 @@
 import styles from "./notificacoesItem.module.css";
+import { useDarkMode } from "./context/DarkModeContext";
 
 export default function NotificacoesItem({
   userImage,

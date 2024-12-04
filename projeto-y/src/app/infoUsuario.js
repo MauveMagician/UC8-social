@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useState } from "react";
 import styles from "./infoUsuario.module.css";
 import { useDarkMode } from "@/app/context/DarkModeContext";
@@ -11,37 +12,50 @@ export default function InfoUsuario({ setRenderUser }) {
   const [nome, setNome] = useState("");
   const [arroba, setArroba] = useState("");
   const [bio, setBio] = useState("");
+
   useEffect(() => {
-    const fetchPhoto = async () => {
-      try {
-        const response = await fetch(`/api/data/pfp?user_id=${user_id}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch photo");
-        }
-        const blob = await response.blob();
-        const imageUrl = URL.createObjectURL(blob);
-        setPfp(imageUrl);
-      } catch (error) {
-        console.error("Error fetching photo:", error);
-      }
-    };
-    const fetchUserinfo = async () => {
-      try {
-        const response = await fetch(`/api/data/userinfo`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch userinfo");
-        }
-        const data = await response.json();
-        setNome(data.nome);
-        setArroba(data.arroba);
-        setBio(data.bio);
-      } catch (error) {
-        console.error("Error fetching userinfo:", error);
-      }
-    };
-    fetchPhoto();
+    // Recuperar a URL da imagem do localStorage
+    const savedPfp = localStorage.getItem("userProfilePicture");
+    if (savedPfp) {
+      setPfp(savedPfp);
+    } else {
+      fetchPhoto();
+    }
     fetchUserinfo();
   }, []);
+
+  const fetchPhoto = async () => {
+    try {
+      const response = await fetch(`/api/data/pfp?user_id=${user_id}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch photo");
+      }
+      const blob = await response.blob();
+      const imageUrl = URL.createObjectURL(blob);
+      setPfp(imageUrl);
+      // Salvar a URL da imagem no localStorage
+      localStorage.setItem("userProfilePicture", imageUrl);
+    } catch (error) {
+      console.error("Error fetching photo:", error);
+    }
+  };
+
+  const fetchUserinfo = async () => {
+    try {
+      const response = await fetch(`/api/data/userinfo`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch userinfo");
+      }
+      const data = await response.json();
+      setNome(data.nome);
+      setArroba(data.arroba);
+      setBio(data.bio);
+    } catch (error) {
+      console.error("Error fetching userinfo:", error);
+    }
+  };
+  fetchPhoto();
+  fetchUserinfo();
   const [uppBio, setUppBio] = useState(false);
   const [uppArroba, setUppArroba] = useState(false);
   const handleClickArroba = () => {
@@ -54,6 +68,61 @@ export default function InfoUsuario({ setRenderUser }) {
   const handleClick = () => {
     setUppBio(!uppBio);
   };
+  const [isClosing, setIsClosing] = useState(false);
+
+  useEffect(() => {
+    // Reset isClosing when the component is rendered
+    setIsClosing(false);
+  }, []);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setRenderUser(false);
+      setIsClosing(false);
+    }, 500); // Espera a animação terminar antes de fechar completamente
+  };
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("/api/logout", { method: "POST" });
+      if (response.ok) {
+        localStorage.removeItem("user");
+        window.location.href = "/";
+      } else {
+        console.error("Falha ao fazer logout");
+      }
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error);
+    }
+  };
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("photo", file);
+
+    try {
+      const response = await fetch("/api/upload-pfp", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha ao enviar a foto");
+      }
+
+      const data = await response.json();
+      setPfp(data.photoPath);
+      // Atualizar a URL da imagem no localStorage
+      localStorage.setItem("userProfilePicture", data.photoPath);
+    } catch (error) {
+      console.error("Erro ao enviar a foto:", error);
+    }
+  };
+
+  // Remove this line as it's not needed in this context
+  // if (!isOpen && !isClosing) return null;
   return (
     <>
       {uppBio && <UppBio setBioParent={setBio} setVisible={setUppBio} />}
@@ -61,34 +130,38 @@ export default function InfoUsuario({ setRenderUser }) {
         <UppArroba setArrobaParent={setArroba} setVisible={setUppArroba} />
       )}
       {uppUser && <UppUser setUserParent={setNome} setVisible={setUppUser} />}
-      <div className={`${styles.container} ${dark ? styles.dark : ""}`}>
+      <div
+        className={`${styles.container} ${dark ? styles.dark : ""} ${
+          styles.visible
+        } ${isClosing ? styles.closing : ""}`}
+      >
         <div className={styles.containerFoto}>
-          <img src="\gato-32546835.jpg"></img>
+          <img src={pfp || "/default-profile.jpg"} alt="Profile" />
           <div className={styles.name} onClick={handleClickUser}>
             {nome} <img src="pencopy.svg" alt="editar nome" />
           </div>
-          <div className={styles.close} onClick={() => setRenderUser(false)}>
+          <div className={styles.close} onClick={handleClose}>
+            <img className={styles.img4} src="/downyellow.svg" />
             <img
               className={styles.img}
-              src={dark ? "/closebutton-dark.svg" : "/closebutton.svg"}
-            ></img>
+              src={dark ? "/downwhite.svg" : "/down.svg"}
+            />
           </div>
-          <button className={styles.mudafoto}>
+          <label htmlFor="photoUpload" className={styles.mudafoto}>
+            <input
+              type="file"
+              id="photoUpload"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleFileUpload}
+            />
             <img
               className={styles.img1}
               src="\camera-white.svg"
               alt="sombra de mudar foto"
             />
             <img src="\camera-svgrepo-com.svg" alt="mudar foto" />
-          </button>
-          <button className={styles.configuracoes}>
-            <img
-              className={styles.img2}
-              src="\cogyellow.svg"
-              alt="sombra de configurações"
-            />
-            <img src="\cog.svg" alt="Configurações" />
-          </button>
+          </label>
         </div>
         <div className={styles.containerInfo}>
           <h3 className={styles.h3}>Conta de Usuário</h3>
@@ -144,7 +217,7 @@ export default function InfoUsuario({ setRenderUser }) {
             <div className={styles.info}>Notificações e sons</div>
           </div>
           <hr className={styles.hr} />
-          <div className={styles.settings}>
+          <div className={styles.settings} onClick={handleLogout}>
             <div className={styles.imgSettings}>
               <img className={styles.img3} src="\Door.svg" alt="Sair" />
             </div>
