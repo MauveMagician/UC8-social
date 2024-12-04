@@ -406,6 +406,37 @@ app
         res.status(500).json({ message: "Internal server error" });
       }
     });
+
+    server.get("/api/users/id", async (req, res) => {
+      const user_id = req.query.user_id;
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        // Query the database for the user with the given handle
+        const [user] = await connection.execute(
+          "SELECT * FROM users WHERE user_id = ?",
+          [user_id]
+        );
+
+        connection.end();
+
+        if (user.length === 0) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        // Return the user data as JSON
+        res.status(200).json(user[0]);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
     server.get("/api/data/likes", async (req, res) => {
       if (!req.session.user) {
         // Redirect to login page if not authenticated
@@ -432,6 +463,24 @@ app
             [user_id, req.query.post_id]
             // Assuming you have a table named "likes" and a column named "post_id"
           );
+          //NOTIFICAR O USUÁRIO DONO DO POST DE QUE O POST FOI CURTIDO
+          const [postOwner] = await connection.execute(
+            "SELECT user_id FROM posts WHERE post_id = ?",
+            [req.query.post_id]
+          );
+
+          if (postOwner[0] !== user_id) {
+            await connection.execute(
+              "INSERT INTO notifications (user_id, type, post_id, actor_id, message) VALUES (?, ?, ?, ?, ?)",
+              [
+                postOwner[0].user_id,
+                "curtida",
+                req.query.post_id,
+                user_id,
+                `User ${user_id} curtiu seu post.`,
+              ]
+            );
+          }
           res.status(200).json({ message: "Like is successful!" });
           // Increase the like count in the posts table
         } else {
@@ -449,6 +498,33 @@ app
         // Decrease the like count in the posts table
       }
     });
+
+    server.get("/api/data/notifications", async (req, res) => {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const user_id = await fetchIdBySession(req);
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+        const [posts] =
+          (await connection.execute(
+            "SELECT * FROM notifications WHERE user_id =? ORDER BY created_at DESC",
+            [user_id]
+          )) || [];
+        //Enviar em um json os posts para o cliente, juntamente com o código 200
+        connection.end();
+        res.status(200).json(posts);
+      } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
     server.get("/api/data/requacks", async (req, res) => {
       if (!req.session.user) {
         return res.status(401).json({ message: "Not authenticated" });
@@ -472,6 +548,24 @@ app
             "INSERT INTO requacks (user_id, post_id) VALUES (?, ?)",
             [user_id, req.query.post_id]
           );
+          //NOTIFICAR O USUÁRIO DONO DO POST DE QUE O POST FOI REQUACKADO
+          const [postOwner] = await connection.execute(
+            "SELECT user_id FROM posts WHERE post_id = ?",
+            [req.query.post_id]
+          );
+
+          if (postOwner[0] !== user_id) {
+            await connection.execute(
+              "INSERT INTO notifications (user_id, type, post_id, actor_id, message) VALUES (?, ?, ?, ?, ?)",
+              [
+                postOwner[0].user_id,
+                "requack",
+                req.query.post_id,
+                user_id,
+                `User ${user_id} fez um requack do seu post.`,
+              ]
+            );
+          }
           res.status(200).json({ message: "Requack sent successfully!" });
         } else {
           await connection.execute(

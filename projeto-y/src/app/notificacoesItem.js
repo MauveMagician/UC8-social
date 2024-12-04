@@ -1,18 +1,29 @@
 import styles from "./notificacoesItem.module.css";
 import { useDarkMode } from "./context/DarkModeContext";
 
-export default function NotificacoesItem() {
-  const { dark, setDark } = useDarkMode();
+export default function NotificacoesItem({
+  userImage,
+  userName,
+  action,
+  content,
+  timestamp,
+}) {
   return (
-    <>
-      <div className={`${styles.container} ${dark ? styles.dark : ""}`}>
-        <div className={styles.notificacao}>
-          <div className={styles.imagem}>
-            <img src="/perfil.jpeg" alt="Foto de perfil do usuário" />
-          </div>
-          Bom dia!
+    <div className={styles.container}>
+      <div className={styles.notificacao}>
+        <div className={styles.imagem}>
+          <img
+            src={userImage || "/perfil.jpeg"}
+            alt={`Foto de perfil de ${userName}`}
+          />
+        </div>
+        <div className={styles.content}>
+          <p className={styles.message}>
+            <strong>{userName}</strong> {action} {content}
+          </p>
+          <span className={styles.timestamp}>{timestamp}</span>
         </div>
       </div>
-    </>
+    </div>
   );
 }
