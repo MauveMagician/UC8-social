@@ -17,7 +17,7 @@
 }
 
 .dark {
-  background-color: #111;
+  background-color: #333;
   color: white;
 }
 .imagem img {
@@ -38,4 +38,9 @@
 .timestamp {
   font-size: 0.8rem;
   color: #65676b;
+}
+
+.darknotificacao {
+  background-color: #111;
+  color: white;
 }
