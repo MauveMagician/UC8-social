@@ -7,81 +7,71 @@ import UppArroba from "./uppdateArroba";
 import UppUser from "./uppdateUser";
 
 export default function InfoUsuario({ setRenderUser }) {
-  const { dark, setDark } = useDarkMode();
+  const { dark } = useDarkMode();
   const [pfp, setPfp] = useState("");
   const [nome, setNome] = useState("");
   const [arroba, setArroba] = useState("");
   const [bio, setBio] = useState("");
-
-  useEffect(() => {
-    // Recuperar a URL da imagem do localStorage
-    const savedPfp = localStorage.getItem("userProfilePicture");
-    if (savedPfp) {
-      setPfp(savedPfp);
-    } else {
-      fetchPhoto();
-    }
-    fetchUserinfo();
-  }, []);
-
-  const fetchPhoto = async () => {
-    try {
-      const response = await fetch(`/api/data/pfp?user_id=${user_id}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch photo");
-      }
-      const blob = await response.blob();
-      const imageUrl = URL.createObjectURL(blob);
-      setPfp(imageUrl);
-      // Salvar a URL da imagem no localStorage
-      localStorage.setItem("userProfilePicture", imageUrl);
-    } catch (error) {
-      console.error("Error fetching photo:", error);
-    }
-  };
-
-  const fetchUserinfo = async () => {
-    try {
-      const response = await fetch(`/api/data/userinfo`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch userinfo");
-      }
-      const data = await response.json();
-      setNome(data.nome);
-      setArroba(data.arroba);
-      setBio(data.bio);
-    } catch (error) {
-      console.error("Error fetching userinfo:", error);
-    }
-  };
-  fetchPhoto();
-  fetchUserinfo();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [uppBio, setUppBio] = useState(false);
   const [uppArroba, setUppArroba] = useState(false);
-  const handleClickArroba = () => {
-    setUppArroba(!uppArroba);
-  };
   const [uppUser, setUppUser] = useState(false);
-  const handleClickUser = () => {
-    setUppUser(!uppUser);
-  };
-  const handleClick = () => {
-    setUppBio(!uppBio);
-  };
   const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
-    // Reset isClosing when the component is rendered
+    const fetchUserData = async () => {
+      try {
+        setLoading(true);
+        const userInfoResponse = await fetch(`/api/data/userinfo`);
+        if (!userInfoResponse.ok) {
+          throw new Error("Failed to fetch userinfo");
+        }
+        const userData = await userInfoResponse.json();
+        setNome(userData.nome);
+        setArroba(userData.arroba);
+        setBio(userData.bio);
+
+        const savedPfp = localStorage.getItem("userProfilePicture");
+        if (savedPfp) {
+          setPfp(savedPfp);
+        } else {
+          const photoResponse = await fetch(
+            `/api/data/pfp?user_id=${userData.id}`
+          );
+          if (!photoResponse.ok) {
+            throw new Error("Failed to fetch photo");
+          }
+          const blob = await photoResponse.blob();
+          const imageUrl = URL.createObjectURL(blob);
+          setPfp(imageUrl);
+          localStorage.setItem("userProfilePicture", imageUrl);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  useEffect(() => {
     setIsClosing(false);
   }, []);
+
+  const toggleState = (setter) => () => setter((prev) => !prev);
 
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(() => {
       setRenderUser(false);
       setIsClosing(false);
-    }, 500); // Espera a animação terminar antes de fechar completamente
+    }, 500);
   };
+
   const handleLogout = async () => {
     try {
       const response = await fetch("/api/logout", { method: "POST" });
@@ -89,12 +79,13 @@ export default function InfoUsuario({ setRenderUser }) {
         localStorage.removeItem("user");
         window.location.href = "/";
       } else {
-        console.error("Falha ao fazer logout");
+        throw new Error("Falha ao fazer logout");
       }
     } catch (error) {
       console.error("Erro ao fazer logout:", error);
     }
   };
+
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -114,15 +105,14 @@ export default function InfoUsuario({ setRenderUser }) {
 
       const data = await response.json();
       setPfp(data.photoPath);
-      // Atualizar a URL da imagem no localStorage
       localStorage.setItem("userProfilePicture", data.photoPath);
     } catch (error) {
       console.error("Erro ao enviar a foto:", error);
     }
   };
 
-  // Remove this line as it's not needed in this context
-  // if (!isOpen && !isClosing) return null;
+  if (loading) return <div>Carregando...</div>;
+  if (error) return <div>Erro: {error}</div>;
   return (
     <>
       {uppBio && <UppBio setBioParent={setBio} setVisible={setUppBio} />}
@@ -137,7 +127,7 @@ export default function InfoUsuario({ setRenderUser }) {
       >
         <div className={styles.containerFoto}>
           <img src={pfp || "/default-profile.jpg"} alt="Profile" />
-          <div className={styles.name} onClick={handleClickUser}>
+          <div className={styles.name} onClick={toggleState(setUppUser)}>
             {nome} <img src="pencopy.svg" alt="editar nome" />
           </div>
           <div className={styles.close} onClick={handleClose}>
@@ -167,7 +157,7 @@ export default function InfoUsuario({ setRenderUser }) {
           <h3 className={styles.h3}>Conta de Usuário</h3>
           <div className={styles.information}>
             <div className={styles.info}>@{arroba}</div>
-            <div className={styles.bio} onClick={handleClickArroba}>
+            <div className={styles.bio} onClick={toggleState(setUppArroba)}>
               <p className={styles.tap}>User</p>
               <img src="pen.svg" alt="editar User" />
             </div>
@@ -175,7 +165,7 @@ export default function InfoUsuario({ setRenderUser }) {
           <hr className={styles.hr} />
           <div className={styles.information}>
             <div className={styles.info}>{bio}</div>
-            <div className={styles.bio} onClick={handleClick}>
+            <div className={styles.bio} onClick={toggleState(setUppBio)}>
               <p className={styles.tap}>Bio</p>
               <img src="pen.svg" alt="editar Bio" />
             </div>

@@ -10,20 +10,33 @@ export default function Postagem({ post_id }) {
   const [content, setContent] = useState("");
   const [user_id, setUserId] = useState("");
   const [user_name, setUserName] = useState("");
+  const [user_arroba, setUserArroba] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        //Puxar do banco de dados os dados da postagem
         const response = await fetch(`/api/data/post?post_id=${post_id}`);
         const data = await response.json();
-        console.log(data);
-        //Parsear o json com os dados e usar os setters dos useStates para trocar os elementos do componente
+        console.log("Dados completos recebidos da API:", data);
+
         setContent(data.Content);
         setUserId(data.user_id);
         setUserName(data.username);
+
+        if (data.arroba) {
+          console.log("Arroba encontrado:", data.arroba);
+          setUserArroba(data.arroba);
+        } else {
+          console.log("Arroba não encontrado, usando username como fallback");
+          setUserArroba(data.username);
+        }
+
+        console.log("Estados atualizados:");
+        console.log("user_id:", data.user_id);
+        console.log("user_name:", data.username);
+        console.log("user_arroba:", data.arroba || data.username);
       } catch (error) {
-        console.error("Error fetching post data:", error);
+        console.error("Erro ao buscar dados do post:", error);
       }
     };
     fetchData();
@@ -79,7 +92,9 @@ export default function Postagem({ post_id }) {
             <span className={dark ? styles.username : ""}>{user_name}</span>
           </div>
           <div className={styles.arrobausuario}>
-            <span className={dark ? styles.arroba : ""}>@{user_name}</span>
+            <span className={dark ? styles.arroba : ""}>
+              @{user_arroba || user_name}
+            </span>
           </div>
         </div>
         <div className={styles.points}>
