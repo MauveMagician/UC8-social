@@ -735,7 +735,7 @@ app
         });
         //Realizar uma consulta para buscar um post post pelo id e colocar em um array
         const [post] = await connection.execute(
-          "SELECT posts.Content,posts.user_id,users.nome AS username FROM posts,users WHERE post_id = ? AND posts.user_id = users.user_id",
+          "SELECT posts.Content,posts.user_id,users.nome AS username,arroba FROM posts,users WHERE post_id = ? AND posts.user_id = users.user_id",
           [post_id]
         );
         connection.end();
@@ -947,6 +947,18 @@ app
 
         // Enviar o json para o cliente na resposta
         res.status(200).json(response);
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+    server.get("/api/user/current", async (req, res) => {
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      try {
+        const userId = await fetchIdBySession(req);
+        res.status(200).json({ id: userId });
       } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Internal server error" });

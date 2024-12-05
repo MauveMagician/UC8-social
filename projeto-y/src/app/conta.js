@@ -1,11 +1,13 @@
 "use client";
 import styles from "./conta.module.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import "./globals.css";
 import PostsUsuario from "./postsUsuario";
 import MidiasUsuario from "./midiasUsuario";
 import MencoesUsuario from "./mencoesUsuario";
 import { useDarkMode } from "./context/DarkModeContext";
+import Link from "next/link";
+import Image from "next/image";
 
 export default function Conta({ user_id }) {
   const [pfp, setPfp] = useState(null);
@@ -13,109 +15,133 @@ export default function Conta({ user_id }) {
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [seguindo, setSeguindo] = useState(false);
-  const { dark, setDark } = useDarkMode();
+  const { dark } = useDarkMode();
+  const [loggedInUserId, setLoggedInUserId] = useState(null);
+  const [nome, setNome] = useState("");
+  const [arroba, setArroba] = useState("");
+  const [bio, setBio] = useState("");
+  const [Color, setColor] = useState([true, false, false]);
+
   useEffect(() => {
-    const fetchPhoto = async () => {
+    const fetchUserInfo = async () => {
       try {
-        const response = await fetch(`/api/data/pfp?user_id=${user_id}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch photo");
+        const [
+          photoResponse,
+          userDataResponse,
+          followersResponse,
+          followingResponse,
+          loggedInUserResponse,
+        ] = await Promise.all([
+          fetch(`/api/data/pfp?user_id=${user_id}`),
+          fetch(`/api/data/userinfo?user_id=${user_id}`),
+          fetch(`/api/data/num_followers?user_id=${user_id}`),
+          fetch(`/api/data/num_following?user_id=${user_id}`),
+          fetch("/api/user/current"),
+        ]);
+
+        if (
+          !photoResponse.ok ||
+          !userDataResponse.ok ||
+          !followersResponse.ok ||
+          !followingResponse.ok ||
+          !loggedInUserResponse.ok
+        ) {
+          throw new Error("Failed to fetch user data");
         }
-        const blob = await response.blob();
+
+        const blob = await photoResponse.blob();
         const imageUrl = URL.createObjectURL(blob);
+        const userData = await userDataResponse.json();
+        const followerCount = await followersResponse.json();
+        const followingCount = await followingResponse.json();
+        const loggedInUserData = await loggedInUserResponse.json();
+
         setPfp(imageUrl);
-      } catch (error) {
-        console.error("Error fetching photo:", error);
-      }
-    };
-
-    const fetchData = async () => {
-      try {
-        const postCountResponse = await fetch(
-          `/api/data/num_posts?user_id=${user_id}`
-        );
-        if (!postCountResponse.ok) {
-          throw new Error("Failed to fetch post count");
-        }
-        const postCount = await postCountResponse.json();
-        console.log("Post count:", postCount);
-        setPostCount(postCount.num_posts);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    const fetchFollowers = async () => {
-      try {
-        const response = await fetch(
-          `/api/data/num_followers?user_id=${user_id}`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch follower count");
-        }
-        const followerCount = await response.json();
-        console.log("Follower count:", followerCount);
+        setNome(userData.nome);
+        setArroba(userData.arroba);
+        setBio(userData.bio);
+        setPostCount(userData.num_posts);
         setFollowersCount(followerCount.num_followers);
+        setFollowingCount(followingCount.num_following);
+        setLoggedInUserId(loggedInUserData.id);
       } catch (error) {
-        console.error("Error fetching follower count:", error);
+        console.error("Error fetching user data:", error);
       }
     };
 
-    const fetchFollowing = async () => {
-      try {
-        const response = await fetch(
-          `/api/data/num_following?user_id=${user_id}`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch following count");
-        }
-        const followingCount = await response.json();
-        console.log("Following count:", followingCount);
-        setFollowingCount(followingCount.num_following);
-      } catch (error) {
-        console.error("Error fetching following count:", error);
-      }
-    };
     if (user_id) {
-      fetchPhoto();
-      fetchFollowing();
-      fetchFollowers();
-      fetchData();
+      fetchUserInfo();
     }
-  }, []);
+  }, [user_id]);
+
   const handleSeguir = async (event) => {
     event.preventDefault();
     try {
-      const response = await fetch(
-        `http://localhost:3000/api/data/seguir?followed_id=${user_id}`,
+      // Primeira requisição para seguir/deixar de seguir
+      const response = await fetch(`/api/data/seguir?followed_id=${user_id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // Importante para enviar cookies de autenticação
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to follow/unfollow");
+      }
+
+      // Segunda requisição para obter o status atualizado
+      const followStatusResponse = await fetch(
+        `/api/data/follow-status?user_id=${user_id}`,
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({}),
+          credentials: "include",
         }
       );
 
-      if (response.ok) {
-        console.log("Followed or unfollowed successfully");
-        setSeguindo(!seguindo);
-      } else {
-        console.error("Failed to follow or unfollow");
+      if (!followStatusResponse.ok) {
+        throw new Error("Failed to get updated follow status");
       }
+
+      const followStatus = await followStatusResponse.json();
+
+      // Atualiza o estado com o novo status
+      setSeguindo(followStatus.isFollowing);
+
+      // Atualiza o número de seguidores
+      setFollowersCount((prevCount) =>
+        followStatus.isFollowing ? prevCount + 1 : prevCount - 1
+      );
+
+      console.log(
+        followStatus.isFollowing
+          ? "Followed successfully"
+          : "Unfollowed successfully"
+      );
     } catch (error) {
       console.error("Error:", error);
+      // Aqui você pode adicionar uma notificação para o usuário sobre o erro
     }
   };
 
-  //função do botão mudar a aparência quando clicado
-  const [Color, setColor] = useState([true, false, false]);
   const handleClick = (index) => {
     const newColor = [false, false, false];
     newColor[index] = true;
     setColor(newColor);
     console.log("mudou a cor do botão");
   };
+  const memoizedPosts = useMemo(
+    () => <PostsUsuario user_id={user_id} />,
+    [user_id]
+  );
+  const memoizedMidias = useMemo(
+    () => <MidiasUsuario user_id={user_id} />,
+    [user_id]
+  );
+  const memoizedMencoes = useMemo(
+    () => <MencoesUsuario user_id={user_id} />,
+    [user_id]
+  );
+
   return (
     <>
       <div className={`${styles.planet} ${dark ? styles.containerescuro : ""}`}>
@@ -125,19 +151,25 @@ export default function Conta({ user_id }) {
           }`}
         >
           <div className={`${styles.back} ${dark ? styles.backescuro : ""}`}>
-            <img
-              className={styles.cabecalhoimg}
-              src={dark ? "/back-light.svg" : "back-svgrepo-com.svg"}
-            ></img>
+            <Link href="/">
+              <img
+                className={styles.cabecalhoimg}
+                src={dark ? "/backlight.svg" : "/backdark.svg"}
+                alt="Voltar para a página inicial"
+              />
+            </Link>
           </div>
-          <div className={styles.nickname}>Eminen_da_vó</div>
+          <div className={styles.nickname}>{arroba}</div>
           <div className={styles.config}>
-            <img
+            <Image
               className={styles.cabecalhoimg}
               src={
                 dark ? "/burgermenu-light.svg" : "/burger-menu-svgrepo-com.svg"
               }
-            ></img>
+              width={24} // Ajuste este valor para a largura real da sua imagem
+              height={24} // Ajuste este valor para a altura real da sua imagem
+              alt="Menu"
+            />
           </div>
         </div>
         <div
@@ -185,37 +217,45 @@ export default function Conta({ user_id }) {
               </div>
             </div>
             <div className={`${styles.perfil} ${dark ? styles.prophile : ""}`}>
-              <div className={styles.nome}>Eminen</div>
-              <div className={styles.email}>email</div>
+              <div className={styles.nome}>{nome}</div>
+              <div className={styles.email}>{arroba}</div>
             </div>
-            <div className={styles.bio}>
-              Apaixonado por tecnologia e inovação. Transformando ideias em
-              realidade. 💻🚀
-            </div>
+            <div className={styles.bio}>{bio}</div>
           </div>
         </div>
 
         <div className={styles.container2}>
-          <div className={styles.follows}>
-            <button className={styles.seguir} onClick={handleSeguir}>
-              <p
-                className={styles.p}
-                style={{ color: dark ? "white" : "black" }}
-              >
-                {seguindo ? "Deixar de seguir" : "Seguir"}
-              </p>
-            </button>
-            <button
-              className={`${styles.seguir} ${dark ? styles.seguirescuro : ""}`}
-            >
-              <p className={styles.p}>Conversar</p>
-            </button>
+          <div className={styles.container2}>
+            <div className={styles.follows}>
+              {loggedInUserId !== user_id && (
+                <>
+                  <button className={styles.seguir} onClick={handleSeguir}>
+                    <p
+                      className={styles.p}
+                      style={{ color: dark ? "white" : "black" }}
+                    >
+                      {seguindo ? "Deixar de seguir" : "Seguir"}
+                    </p>
+                  </button>
+                  <button className={styles.seguir}>
+                    <p
+                      className={styles.p}
+                      style={{ color: dark ? "white" : "black" }}
+                    >
+                      Conversar
+                    </p>
+                  </button>
+                </>
+              )}
+            </div>
+            {/* ... resto do código ... */}
           </div>
           <div className={`${styles.conteudos} ${dark ? styles.contents : ""}`}>
             <button
               style={{ color: dark ? "white" : "black" }}
               className={Color[0] ? styles.nodestaque : styles.ydestaque}
               onClick={() => handleClick(0)}
+              type="button"
             >
               Quacks
             </button>
@@ -223,6 +263,7 @@ export default function Conta({ user_id }) {
               style={{ color: dark ? "white" : "black" }}
               className={Color[1] ? styles.nodestaque : styles.ydestaque}
               onClick={() => handleClick(1)}
+              type="button"
             >
               Mídias
             </button>
@@ -230,15 +271,16 @@ export default function Conta({ user_id }) {
               style={{ color: dark ? "white" : "black" }}
               className={Color[2] ? styles.nodestaque : styles.ydestaque}
               onClick={() => handleClick(2)}
+              type="button"
             >
               Menções
             </button>
           </div>
         </div>
 
-        {Color[0] ? <PostsUsuario user_id={user_id} /> : <></>}
-        {Color[1] ? <MidiasUsuario user_id={user_id} /> : <></>}
-        {Color[2] ? <MencoesUsuario user_id={user_id} /> : <></>}
+        {Color[0] && memoizedPosts}
+        {Color[1] && memoizedMidias}
+        {Color[2] && memoizedMencoes}
       </div>
     </>
   );
