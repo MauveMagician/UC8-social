@@ -952,6 +952,70 @@ app
         res.status(500).json({ message: "Internal server error" });
       }
     });
+
+    server.get("/api/data/posts_screen", async (req, res) => {
+      const page = Math.max(1, parseInt(req.query.page) || 1);
+      const postsPerPage = 10;
+      const hashtag = req.query.hashtag;
+
+      let connection;
+      try {
+        connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        let countQuery = "SELECT COUNT(*) AS total FROM posts p";
+        let postsQuery = `
+          SELECT p.*, u.nome AS username, u.arroba 
+          FROM posts p 
+          JOIN users u ON p.user_id = u.user_id
+        `;
+
+        const queryParams = [];
+
+        if (hashtag) {
+          countQuery += " WHERE p.content LIKE ?";
+          postsQuery += " WHERE p.content LIKE ?";
+          queryParams.push(`%#${hashtag}%`);
+        }
+
+        const [totalResult] = await connection.execute(countQuery, queryParams);
+        const totalPosts = totalResult[0].total;
+
+        const totalPages = Math.ceil(totalPosts / postsPerPage);
+        const offset = (page - 1) * postsPerPage;
+
+        postsQuery += " ORDER BY p.post_date DESC LIMIT ? OFFSET ?";
+        queryParams.push(postsPerPage, offset);
+
+        // Use query instead of execute for the posts query
+        const [posts] = await connection.query(postsQuery, queryParams);
+
+        res.status(200).json({
+          posts,
+          currentPage: page,
+          totalPages,
+          postsPerPage,
+        });
+      } catch (error) {
+        console.error("Error in /api/data/posts_screen:", error);
+        res
+          .status(500)
+          .json({ message: "Internal server error", error: error.message });
+      } finally {
+        if (connection) {
+          try {
+            await connection.end();
+          } catch (err) {
+            console.error("Error closing database connection:", err);
+          }
+        }
+      }
+    });
+
     server.delete("/api/data/clear_notifications", async (req, res) => {
       //Rota autenticada que limpa todas as notificações do usuário logado no back-end
       if (!req.session.user) {
