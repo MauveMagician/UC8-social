@@ -8,9 +8,14 @@ export default function NotificacoesItem({
   content,
   timestamp,
 }) {
+  const { dark } = useDarkMode();
   return (
     <div className={styles.container}>
-      <div className={styles.notificacao}>
+      <div
+        className={`${styles.notificacao} ${
+          dark ? styles.darknotificacao : ""
+        }`}
+      >
         <div className={styles.imagem}>
           <img
             src={userImage || "/perfil.jpeg"}

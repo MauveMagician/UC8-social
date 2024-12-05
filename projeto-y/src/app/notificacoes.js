@@ -5,7 +5,7 @@ import NotificacoesItem from "./notificacoesItem";
 import Link from "next/link";
 
 export default function Notificacoes() {
-  const { darkMode } = useDarkMode();
+  const { dark } = useDarkMode();
   const [notifications, setNotifications] = useState([]);
   const [clearingAll, setClearingAll] = useState(false);
 
@@ -66,14 +66,12 @@ export default function Notificacoes() {
   };
 
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${dark ? styles.darkcontainer : ""}`}>
       <h2 className={styles.title}>Notificações</h2>
       {notifications.length > 0 ? (
         <>
           <button
-            className={`${styles.clearbutton} ${
-              darkMode ? styles.darkbutton : ""
-            }`}
+            className={`${styles.clearbutton} ${dark ? styles.darkbutton : ""}`}
             onClick={handleClearAll}
           >
             Limpar notificações
@@ -81,7 +79,7 @@ export default function Notificacoes() {
           <div
             className={`${styles.notificationlist} ${
               clearingAll ? styles.clearingAll : ""
-            }`}
+            } ${dark ? styles.darknotificationlist : ""}`}
           >
             {notifications.map((notification) => (
               <Link
@@ -100,7 +98,7 @@ export default function Notificacoes() {
                 <div
                   className={`${styles.notificationitem} ${
                     notification.fadeOut ? styles.fadeout : ""
-                  }`}
+                  } ${dark ? styles.darknotificationitem : ""}`}
                 >
                   <NotificacoesItem
                     userImage={notification.userImage}
