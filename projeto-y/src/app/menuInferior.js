@@ -6,6 +6,7 @@ import FormularioPost from "@/app/formularioPost";
 import { useDarkMode } from "./context/DarkModeContext";
 import InfoUsuario from "@/app/infoUsuario";
 import { useRouter } from "next/navigation";
+import ChatComponent from "./chatComponent";
 
 export default function MenuInferior() {
   const { dark, setDark } = useDarkMode();
@@ -20,6 +21,7 @@ export default function MenuInferior() {
   const [error, setError] = useState(null);
   const [showHashtagInput, setShowHashtagInput] = useState(false);
   const router = useRouter();
+  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     const checkUserSession = async () => {
@@ -77,11 +79,16 @@ export default function MenuInferior() {
     }
   };
 
+  const handleToggleChat = () => {
+    setShowChat((prevState) => !prevState);
+  };
+
   return (
     <>
       {renderLog ? <Login setRenderLog={setRenderLog} /> : <></>}
       {renderPost ? <FormularioPost /> : <></>}
       {renderUser ? <InfoUsuario setRenderUser={setRenderUser} /> : <></>}
+      {showChat && <ChatComponent onClose={() => setShowChat(false)} />}
       <div className={`${styles.container} ${dark ? styles.dark : ""}`}>
         <button className={styles.mais}>
           <img src={dark ? "/burgermenu-light.svg" : "/burgermenu.svg"}></img>
@@ -115,7 +122,7 @@ export default function MenuInferior() {
         >
           <img src={dark ? "/penadepato.svg" : "/penadepato copy.svg"}></img>
         </button>
-        <button className={styles.batepapo}>
+        <button className={styles.batepapo} onClick={handleToggleChat}>
           <img src={dark ? "/message.svg" : "/message copy.svg"}></img>
         </button>
         <button

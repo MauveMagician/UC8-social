@@ -7,6 +7,8 @@ const mysql = require("mysql2/promise");
 const { verifyPassword, hashPassword } = require("./src/lib/auth");
 const fs = require("fs");
 const path = require("path");
+const http = require("http");
+const socketIo = require("socket.io");
 
 const pfpUploadPath =
   process.env.PFP_UPLOAD_PATH || path.join(__dirname, "pfp");
@@ -76,6 +78,39 @@ app
   .prepare()
   .then(() => {
     const server = express();
+    const httpServer = http.createServer(server);
+    const io = socketIo(httpServer, {
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+        allowedHeaders: ["my-custom-header"],
+        credentials: true,
+      },
+    });
+
+    // Socket.IO connection handling
+    io.on("connection", (socket) => {
+      console.log("New client connected");
+
+      socket.on("chat message", (msg) => {
+        io.emit("chat message", msg);
+      });
+
+      socket.on("disconnect", () => {
+        console.log("Client disconnected");
+      });
+
+      // Error handling for socket
+      socket.on("error", (error) => {
+        console.error("Socket error:", error);
+      });
+    });
+
+    const PORT = process.env.PORT || 3000;
+    httpServer.listen(PORT, (err) => {
+      if (err) throw err;
+      console.log(`> Ready on http://localhost:${PORT}`);
+    });
 
     // MySQL session store
     const sessionStore = new MySQLStore({
