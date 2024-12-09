@@ -7,6 +7,8 @@ const mysql = require("mysql2/promise");
 const { verifyPassword, hashPassword } = require("./src/lib/auth");
 const fs = require("fs");
 const path = require("path");
+const http = require("http");
+const socketIo = require("socket.io");
 
 const pfpUploadPath =
   process.env.PFP_UPLOAD_PATH || path.join(__dirname, "pfp");
@@ -76,6 +78,39 @@ app
   .prepare()
   .then(() => {
     const server = express();
+    const httpServer = http.createServer(server);
+    const io = socketIo(httpServer, {
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+        allowedHeaders: ["my-custom-header"],
+        credentials: true,
+      },
+    });
+
+    // Socket.IO connection handling
+    io.on("connection", (socket) => {
+      console.log("New client connected");
+
+      socket.on("chat message", (msg) => {
+        io.emit("chat message", msg);
+      });
+
+      socket.on("disconnect", () => {
+        console.log("Client disconnected");
+      });
+
+      // Error handling for socket
+      socket.on("error", (error) => {
+        console.error("Socket error:", error);
+      });
+    });
+
+    const PORT = process.env.PORT || 3000;
+    httpServer.listen(PORT, (err) => {
+      if (err) throw err;
+      console.log(`> Ready on http://localhost:${PORT}`);
+    });
 
     // MySQL session store
     const sessionStore = new MySQLStore({
@@ -964,6 +999,142 @@ app
         res.status(500).json({ message: "Internal server error" });
       }
     });
+
+    server.get("/api/data/posts_screen", async (req, res) => {
+      const page = Math.max(1, parseInt(req.query.page) || 1);
+      const postsPerPage = 10;
+      const hashtag = req.query.hashtag;
+
+      let connection;
+      try {
+        connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        let countQuery = "SELECT COUNT(*) AS total FROM posts p";
+        let postsQuery = `
+          SELECT p.*, u.nome AS username, u.arroba 
+          FROM posts p 
+          JOIN users u ON p.user_id = u.user_id
+        `;
+
+        const queryParams = [];
+
+        if (hashtag) {
+          countQuery += " WHERE p.content LIKE ?";
+          postsQuery += " WHERE p.content LIKE ?";
+          queryParams.push(`%#${hashtag}%`);
+        }
+
+        const [totalResult] = await connection.execute(countQuery, queryParams);
+        const totalPosts = totalResult[0].total;
+
+        const totalPages = Math.ceil(totalPosts / postsPerPage);
+        const offset = (page - 1) * postsPerPage;
+
+        postsQuery += " ORDER BY p.post_date DESC LIMIT ? OFFSET ?";
+        queryParams.push(postsPerPage, offset);
+
+        // Use query instead of execute for the posts query
+        const [posts] = await connection.query(postsQuery, queryParams);
+
+        res.status(200).json({
+          posts,
+          currentPage: page,
+          totalPages,
+          postsPerPage,
+        });
+      } catch (error) {
+        console.error("Error in /api/data/posts_screen:", error);
+        res
+          .status(500)
+          .json({ message: "Internal server error", error: error.message });
+      } finally {
+        if (connection) {
+          try {
+            await connection.end();
+          } catch (err) {
+            console.error("Error closing database connection:", err);
+          }
+        }
+      }
+    });
+
+    server.delete("/api/data/clear_notifications", async (req, res) => {
+      //Rota autenticada que limpa todas as notificações do usuário logado no back-end
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      try {
+        // Connect to the database
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        const user_id = await fetchIdBySession(req);
+
+        // Delete all notifications for the authenticated user
+        await connection.execute(
+          "DELETE FROM notifications WHERE user_id = ?",
+          [user_id]
+        );
+
+        connection.end();
+
+        res
+          .status(200)
+          .json({ message: "All notifications cleared successfully" });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+    server.delete(
+      "/api/data/notification/:notification_id",
+      async (req, res) => {
+        //Rota autenticada que limpa uma notificação específica do usuário logado no back-end, passando o id da notificação como um parâmetro
+        if (!req.session.user) {
+          return res.status(401).json({ message: "Not authenticated" });
+        }
+
+        const user_id = await fetchIdBySession(req);
+        const { notification_id } = req.params;
+
+        if (!notification_id) {
+          return res
+            .status(400)
+            .json({ message: "Notification ID is required" });
+        }
+
+        try {
+          const connection = await mysql.createConnection({
+            host: process.env.DB_HOST,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_NAME,
+          });
+
+          const [result] = await connection.execute(
+            "DELETE FROM notifications WHERE notification_id = ? AND user_id = ?",
+            [notification_id, user_id]
+          );
+          connection.end();
+          res
+            .status(200)
+            .json({ message: "Notification deleted successfully" });
+        } catch (error) {
+          console.error(error);
+          res.status(500).json({ message: "Internal server error" });
+        }
+      }
+    );
     // Handle all other routes with Next.js
     server.all("*", (req, res) => {
       return handle(req, res);
