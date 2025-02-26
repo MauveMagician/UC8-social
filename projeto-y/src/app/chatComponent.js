@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import styles from "./chatComponent.module.css";
 import { useDarkMode } from "@/app/context/DarkModeContext";
+import { fetchUserInfo } from "./userinfo";
 
 export default function ChatComponent() {
   const [messages, setMessages] = useState([]);
@@ -12,46 +13,70 @@ export default function ChatComponent() {
   const [isVisible, setIsVisible] = useState(true);
   const messagesEndRef = useRef(null);
   const { dark } = useDarkMode();
+  const [username, setUsername] = useState("");
+  const [onlineUsers, setOnlineUsers] = useState([]);
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:3000", {
-      transports: ["websocket", "polling"],
-    });
+    const socketInitializer = async () => {
+      try {
+        await fetch("/api/socket");
+        const newSocket = io();
 
-    newSocket.on("connect", () => {
-      console.log("Connected to server");
-      setIsConnected(true);
-    });
+        newSocket.on("connect", () => {
+          console.log("Connected to server");
+          setIsConnected(true);
+        });
 
-    newSocket.on("chat message", (msg) => {
-      console.log("Received message:", msg);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { ...msg, isSent: msg.id === newSocket.id },
-      ]);
-    });
+        newSocket.on("chat message", (msg) => {
+          setMessages((prevMessages) => {
+            if (!prevMessages.some((m) => m.id === msg.id)) {
+              return [...prevMessages, msg];
+            }
+            return prevMessages;
+          });
+        });
 
-    newSocket.on("connect_error", (error) => {
-      console.error("Connection error:", error);
-      setError("Failed to connect to the chat server. Please try again later.");
-    });
+        newSocket.on("online users", (users) => {
+          setOnlineUsers(users);
+        });
 
-    newSocket.on("error", (error) => {
-      console.error("Socket error:", error);
-      setError("An error occurred with the chat connection.");
-    });
+        newSocket.on("mention", (notification) => {
+          setNotifications((prev) => [...prev, notification]);
+        });
 
-    setSocket(newSocket);
-    document.body.style.overflow = "hidden";
-    return () => {
-      newSocket.close();
-      document.body.style.overflow = "auto";
+        setSocket(newSocket);
+      } catch (error) {
+        console.error("Socket initialization error:", error);
+        setError("Failed to connect to chat server");
+      }
     };
-  }, []);
+
+    socketInitializer();
+
+    return () => {
+      if (socket) {
+        socket.disconnect();
+      }
+    };
+  }, [username]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    async function getUserInfo() {
+      try {
+        const userInfo = await fetchUserInfo();
+        const userName = userInfo.nome || userInfo.arroba || "Anonymous";
+        setUsername(userName);
+        if (socket) {
+          socket.emit("set username", userName);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user info:", error);
+        setUsername("Anonymous");
+      }
+    }
+    getUserInfo();
+  }, [socket]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -60,20 +85,26 @@ export default function ChatComponent() {
   const sendMessage = (e) => {
     e.preventDefault();
     if (socket && inputMessage.trim()) {
-      const message = { id: socket.id, message: inputMessage };
+      const mentionRegex = /@(\w+)/g;
+      const mentions = [...new Set(inputMessage.match(mentionRegex) || [])];
+      const mentionedUsers = mentions.map((mention) => mention.slice(1));
+
+      const message = {
+        id: Date.now(),
+        message: inputMessage,
+        username: username,
+        mentions: mentionedUsers,
+      };
       socket.emit("chat message", message);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { ...message, isSent: true },
-      ]);
       setInputMessage("");
+      // Don't add the message to the state here, let the server echo it back
     }
   };
 
   const handleClose = () => {
     setIsVisible(false);
     if (socket) {
-      socket.close();
+      socket.disconnect();
     }
     document.body.style.overflow = "auto";
   };
@@ -93,7 +124,7 @@ export default function ChatComponent() {
   return (
     <div className={`${styles.chatcontainer} ${dark ? styles.dark : ""}`}>
       <div className={styles.chatheader}>
-        <span className={styles.chatTitle}>Quacker</span>
+        <span className={styles.chatTitle}>Quacker - {username}</span>
         <button className={styles.closeButton} onClick={handleClose}>
           <img
             src={dark ? "/closebutton-dark.svg" : "/closebutton.svg"}
@@ -102,20 +133,34 @@ export default function ChatComponent() {
           />
         </button>
       </div>
+      {notifications.length > 0 && (
+        <div className={styles.notifications}>
+          {notifications.map((notification, index) => (
+            <div key={index} className={styles.notification}>
+              <strong>{notification.fromUser}</strong> mentioned you ({username}
+              ): {notification.message}
+            </div>
+          ))}
+        </div>
+      )}
       <div className={styles.chatmessages}>
-        {messages.map((msg, index) => (
+        {messages.map((msg) => (
           <div
-            key={index}
+            key={msg.id}
             className={`${styles.messageWrapper} ${
-              msg.isSent ? styles.sentWrapper : styles.receivedWrapper
+              msg.username === username
+                ? styles.sentWrapper
+                : styles.receivedWrapper
             }`}
           >
             <div
               className={`${styles.message} ${
-                msg.isSent ? styles.sent : styles.received
+                msg.username === username ? styles.sent : styles.received
               }`}
             >
-              <span className={styles.messageid}>{msg.id.slice(0, 4)}:</span>
+              <span className={styles.messageid}>
+                {msg.username || msg.id.slice(0, 4)}:
+              </span>
               <span className={styles.messagetext}>{msg.message}</span>
             </div>
           </div>

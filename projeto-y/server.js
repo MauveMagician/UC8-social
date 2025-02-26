@@ -90,26 +90,43 @@ app
 
     // Socket.IO connection handling
     io.on("connection", (socket) => {
-      console.log("New client connected");
+      // ... (other socket event handlers)
 
       socket.on("chat message", (msg) => {
+        // Broadcast the message to all clients
         io.emit("chat message", msg);
+
+        // Check for mentions and send notifications
+        if (msg.mentions && msg.mentions.length > 0) {
+          msg.mentions.forEach((mentionedUser) => {
+            // Find the socket of the mentioned user
+            const mentionedSocket = Object.values(io.sockets.sockets).find(
+              (s) => s.username === mentionedUser
+            );
+
+            if (mentionedSocket) {
+              mentionedSocket.emit("mention", {
+                fromUser: msg.username,
+                message: msg.message,
+              });
+            }
+          });
+        }
       });
 
-      socket.on("disconnect", () => {
-        console.log("Client disconnected");
-      });
-
-      // Error handling for socket
-      socket.on("error", (error) => {
-        console.error("Socket error:", error);
-      });
+      // ... other socket event handlers
     });
+
+    // Helper function to get socket ID for a username (you need to implement this)
+    function getUserSocketId(username) {
+      // This should return the socket ID for the given username
+      // You'll need to maintain a mapping of usernames to socket IDs
+    }
 
     const PORT = process.env.PORT || 3000;
     httpServer.listen(PORT, (err) => {
       if (err) throw err;
-      console.log(`> Ready on http://localhost:${PORT}`);
+      console.log(`> Ready on http://localhost:${PORT}`); // You can remove or comment out this line
     });
 
     // MySQL session store
