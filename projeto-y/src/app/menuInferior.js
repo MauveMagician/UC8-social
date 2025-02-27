@@ -1,6 +1,6 @@
 "use client";
 import styles from "./menuInferior.module.css";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Login from "./login";
 import FormularioPost from "@/app/formularioPost";
 import { useDarkMode } from "./context/DarkModeContext";
@@ -22,29 +22,47 @@ export default function MenuInferior() {
   const [showHashtagInput, setShowHashtagInput] = useState(false);
   const router = useRouter();
   const [showChat, setShowChat] = useState(false);
+  const hashtagInputRef = useRef(null);
+  const [hashtagSuggestions, setHashtagSuggestions] = useState([]);
+
+  const fetchHashtagSuggestions = async (query = "") => {
+    try {
+      const response = await fetch(`/api/hashtags/suggestions?query=${query}`);
+      if (response.ok) {
+        const data = await response.json();
+        setHashtagSuggestions(data.suggestions);
+      }
+    } catch (error) {
+      console.error("Error fetching hashtag suggestions:", error);
+    }
+  };
 
   useEffect(() => {
-    const checkUserSession = async () => {
-      try {
-        const response = await fetch("/api/auth/session");
-        if (response.ok) {
-          const data = await response.json();
-          if (data.user) {
-            setUsuarioLogado(true);
-          } else {
-            setUsuarioLogado(false);
-          }
-        } else {
-          setUsuarioLogado(false);
-        }
-      } catch (error) {
-        console.error("Error checking user session:", error);
-        setUsuarioLogado(false);
+    if (showHashtagInput) {
+      fetchHashtagSuggestions();
+      if (hashtagInputRef.current) {
+        hashtagInputRef.current.focus();
       }
-    };
+    } else {
+      setHashtagSuggestions([]);
+    }
+  }, [showHashtagInput]);
 
-    checkUserSession();
-  }, []);
+  useEffect(() => {
+    if (currentHashtag.length > 0) {
+      fetchHashtagSuggestions(currentHashtag);
+    }
+  }, [currentHashtag]);
+
+  const handleHashtagChange = (e) => {
+    const newHashtag = e.target.value;
+    setCurrentHashtag(newHashtag);
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    setCurrentHashtag(suggestion);
+    setShowHashtagInput(false);
+  };
 
   const handleHashtagSearch = async () => {
     setIsLoading(true);
@@ -85,45 +103,67 @@ export default function MenuInferior() {
 
   return (
     <>
-      {renderLog ? <Login setRenderLog={setRenderLog} /> : <></>}
-      {renderPost ? <FormularioPost /> : <></>}
-      {renderUser ? <InfoUsuario setRenderUser={setRenderUser} /> : <></>}
+      {renderLog && <Login setRenderLog={setRenderLog} />}
+      {renderPost && <FormularioPost />}
+      {renderUser && <InfoUsuario setRenderUser={setRenderUser} />}
       {showChat && <ChatComponent onClose={() => setShowChat(false)} />}
       <div className={`${styles.container} ${dark ? styles.dark : ""}`}>
         <button className={styles.mais}>
-          <img src={dark ? "/burgermenu-light.svg" : "/burgermenu.svg"}></img>
+          <img
+            src={dark ? "/burgermenu-light.svg" : "/burgermenu.svg"}
+            alt="Menu"
+          />
         </button>
         <button
           className={styles.trends}
           onClick={() => setShowHashtagInput(!showHashtagInput)}
         >
-          <img src={dark ? "/trend copy.svg" : "/trend.svg"}></img>
+          <img src={dark ? "/trend copy.svg" : "/trend.svg"} alt="Trends" />
         </button>
         {showHashtagInput && (
           <div className={styles.hashtaginputcontainer}>
-            <input
-              type="text"
-              value={currentHashtag}
-              onChange={(e) => setCurrentHashtag(e.target.value)}
-              placeholder="Insira uma hashtag"
-              className={styles.hashtaginput}
-            />
-            <button
-              onClick={handleHashtagSearch}
-              className={styles.searchbutton}
-            >
-              Buscar
-            </button>
+            <div className={styles.inputWrapper}>
+              <input
+                ref={hashtagInputRef}
+                type="text"
+                value={currentHashtag}
+                onChange={handleHashtagChange}
+                placeholder="Insira uma hashtag"
+                className={styles.hashtaginput}
+              />
+              <button
+                onClick={handleHashtagSearch}
+                className={styles.searchbutton}
+              >
+                Buscar
+              </button>
+            </div>
+            {hashtagSuggestions.length > 0 && (
+              <ul className={styles.suggestionsList}>
+                {hashtagSuggestions.map((suggestion, index) => (
+                  <li
+                    key={index}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    className={styles.suggestionItem}
+                  >
+                    #{suggestion}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
         <button
           className={styles.digitar}
           onClick={() => setRenderPost(!renderPost)}
         >
-          <img src={dark ? "/penadepato.svg" : "/penadepato copy.svg"}></img>
+          <img
+            src={dark ? "/penadepato.svg" : "/penadepato copy.svg"}
+            alt="Post"
+          />
         </button>
         <button className={styles.batepapo} onClick={handleToggleChat}>
-          <img src={dark ? "/message.svg" : "/message copy.svg"}></img>
+          <img src={dark ? "/message.svg" : "/message copy.svg"} alt="Chat" />
         </button>
         <button
           className={styles.conta}
@@ -133,7 +173,7 @@ export default function MenuInferior() {
               : setRenderLog(!renderLog);
           }}
         >
-          <img src={dark ? "/userlight.svg" : "/userdark.svg"}></img>
+          <img src={dark ? "/userlight.svg" : "/userdark.svg"} alt="User" />
         </button>
       </div>
     </>

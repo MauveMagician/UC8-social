@@ -113,3 +113,19 @@
   text-decoration: underline;
   font-weight: bolder;
 }
+
+.title {
+  color: black;
+  font-size: 1.5rem;
+}
+
+.darkTitle {
+  color: #f5f5f5;
+}
+
+.titleContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1rem;
+}

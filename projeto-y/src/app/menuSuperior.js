@@ -4,6 +4,7 @@ import styles from "./menuSuperior.module.css";
 import { useDarkMode } from "./context/DarkModeContext";
 import { useState, useEffect } from "react";
 import Notificacoes from "./notificacoes";
+import Link from "next/link";
 
 export default function MenuSuperior() {
   const [bell, setBell] = useState(false);
@@ -36,9 +37,11 @@ export default function MenuSuperior() {
         <button className={styles.cor} onClick={handleDarkModeToggle}>
           <img src={dark ? "/lua-dark.svg" : "/lua.svg"}></img>
         </button>
-        <button className={styles.logo}>
-          <img src={dark ? "/pato-dark.svg" : "/pato.svg"}></img>
-        </button>
+        <Link href="/">
+          <button className={styles.logo}>
+            <img src={dark ? "/pato-dark.svg" : "/pato.svg"}></img>
+          </button>
+        </Link>
         <button className={styles.sininho} onClick={handleMenuClick}>
           <img src={dark ? "/sino-dark.svg" : "/sino.svg"}></img>
         </button>

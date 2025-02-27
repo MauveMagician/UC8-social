@@ -52,7 +52,7 @@ export default function CriarConta({ setAccount }) {
           />
           <input
             type="text"
-            placeholder="Arroba"
+            placeholder="Nome de usuário"
             value={arroba}
             onChange={(e) => setArroba(e.target.value)}
             className={`${styles.input1} ${dark ? styles.darkinput : ""}`}

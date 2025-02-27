@@ -35,6 +35,11 @@ export default function Login({ setRenderLog }) {
     <>
       {account ? <CriarConta setAccount={setAccount} /> : <></>}
       <div className={`${styles.container} ${dark ? styles.dark : ""}`}>
+        <div className={styles.titleContainer}>
+          <p className={`${styles.title} ${dark ? styles.darkTitle : ""}`}>
+            Entre na sua conta
+          </p>
+        </div>
         <div className={styles.pato}>
           <img src={dark ? "/pato-dark.svg" : "/pato.svg"}></img>
         </div>
