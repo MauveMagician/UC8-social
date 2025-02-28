@@ -26,11 +26,18 @@ export default function MenuInferior() {
   const [hashtagSuggestions, setHashtagSuggestions] = useState([]);
 
   const fetchHashtagSuggestions = async (query = "") => {
+    console.log("Fetching suggestions for query:", query);
     try {
       const response = await fetch(`/api/hashtags/suggestions?query=${query}`);
+      console.log("Response status:", response.status);
       if (response.ok) {
         const data = await response.json();
-        setHashtagSuggestions(data.suggestions);
+        console.log("Fetched suggestions data:", data);
+        setHashtagSuggestions(data.suggestions || []);
+      } else {
+        console.error("Failed to fetch suggestions:", response.statusText);
+        const errorText = await response.text();
+        console.error("Error response:", errorText);
       }
     } catch (error) {
       console.error("Error fetching hashtag suggestions:", error);
@@ -39,6 +46,7 @@ export default function MenuInferior() {
 
   useEffect(() => {
     if (showHashtagInput) {
+      console.log("Fetching initial suggestions");
       fetchHashtagSuggestions();
       if (hashtagInputRef.current) {
         hashtagInputRef.current.focus();
@@ -51,6 +59,8 @@ export default function MenuInferior() {
   useEffect(() => {
     if (currentHashtag.length > 0) {
       fetchHashtagSuggestions(currentHashtag);
+    } else {
+      fetchHashtagSuggestions();
     }
   }, [currentHashtag]);
 
@@ -151,6 +161,9 @@ export default function MenuInferior() {
                 ))}
               </ul>
             )}
+            <div style={{ color: "red" }}>
+              Debug: {hashtagSuggestions.length} suggestions
+            </div>
           </div>
         )}
         <button

@@ -268,6 +268,63 @@ app
       }
     });
 
+    server.post("/api/data/post", async (req, res) => {
+      const { content } = req.body;
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const user_id = await fetchIdBySession(req);
+
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        // Insert the post
+        const [postResult] = await connection.execute(
+          "INSERT INTO posts (user_id, content, post_date) VALUES (?, ?, NOW())",
+          [user_id, content]
+        );
+        const post_id = postResult.insertId;
+
+        // Extract hashtags from the content
+        const hashtags = content.match(/#\w+/g) || [];
+
+        // Insert each hashtag and create association
+        for (const hashtag of hashtags) {
+          const hashtagText = hashtag.slice(1); // Remove the # symbol
+
+          // Insert hashtag if it doesn't exist
+          await connection.execute(
+            "INSERT IGNORE INTO hashtags (hashtag) VALUES (?)",
+            [hashtagText]
+          );
+
+          // Get the hashtag_id
+          const [hashtagRows] = await connection.execute(
+            "SELECT hashtag_id FROM hashtags WHERE hashtag = ?",
+            [hashtagText]
+          );
+          const hashtag_id = hashtagRows[0].hashtag_id;
+
+          // Create association in posts_hashtags
+          await connection.execute(
+            "INSERT INTO posts_hashtags (post_id, hashtag_id) VALUES (?, ?)",
+            [post_id, hashtag_id]
+          );
+        }
+
+        connection.end();
+        res.status(201).json({ message: "Post is successful" });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
     server.post("/api/auth/login", async (req, res) => {
       const { email, senha } = req.body;
 
@@ -390,6 +447,16 @@ app
           "INSERT INTO posts (user_id, content, post_date) VALUES (?, ?,NOW())",
           [user_id, content]
         );
+        // Extract hashtags from the content
+        const hashtags = content.match(/#\w+/g) || [];
+
+        // Insert each hashtag separately
+        for (const hashtag of hashtags) {
+          await connection.execute(
+            "INSERT INTO hashtags (hashtag) VALUES (?)",
+            [hashtag]
+          );
+        }
         connection.end();
         res.status(201).json({ message: "Post is successful" });
       } catch (error) {
