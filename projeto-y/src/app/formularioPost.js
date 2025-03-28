@@ -1,11 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import styles from "./formularioPost.module.css";
 import { useDarkMode } from "@/app/context/DarkModeContext";
 
 export default function FormularioPost() {
   const { dark, setDark } = useDarkMode();
   const [postContent, setPostContent] = useState("");
+  const textareaRef = useRef(null);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -33,6 +34,12 @@ export default function FormularioPost() {
     }
   };
 
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, []);
+
   return (
     <div className={`${styles.container}`}>
       <form
@@ -46,6 +53,7 @@ export default function FormularioPost() {
           value={postContent}
           onChange={(e) => setPostContent(e.target.value)}
           maxLength={140}
+          ref={textareaRef}
         ></textarea>
         <button
           type="submit"

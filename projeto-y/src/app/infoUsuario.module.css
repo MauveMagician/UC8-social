@@ -27,6 +27,11 @@
   opacity: 1;
 }
 
+.dark {
+  background-color: #111;
+  color: white;
+}
+
 /* Animação de entrada */
 @keyframes slideIn {
   0% {

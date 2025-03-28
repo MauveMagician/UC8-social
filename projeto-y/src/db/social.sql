@@ -43,35 +43,59 @@ BEGIN
     DECLARE mention_position INT;
     DECLARE mention_end INT;
     DECLARE mentioned_arroba VARCHAR(25);
+    DECLARE hashtag_text VARCHAR(140);
+    DECLARE hashtag_position INT;
+    DECLARE hashtag_end INT;
+    DECLARE hashtag_id INT;
 
-    -- Find the position of '@' in the post content
+    -- Handle mentions
     SET mention_position = LOCATE('@', NEW.content);
-
     WHILE mention_position > 0 DO
-        -- Find the end of the mention (space or end of string)
-        SET mention_end = LOCATE(' ', NEW.content, mention_position);
-        IF mention_end = 0 THEN
-            SET mention_end = LENGTH(NEW.content) + 1;
+        -- ... (existing mention handling code)
+    END WHILE;
+
+    -- Handle hashtags
+    SET hashtag_position = LOCATE('#', NEW.content);
+    WHILE hashtag_position > 0 DO
+        -- Find the end of the hashtag (space or end of string)
+        SET hashtag_end = LOCATE(' ', NEW.content, hashtag_position);
+        IF hashtag_end = 0 THEN
+            SET hashtag_end = LENGTH(NEW.content) + 1;
         END IF;
-
-        -- Extract the mentioned arroba
-        SET mentioned_arroba = SUBSTRING(NEW.content, mention_position + 1, mention_end - mention_position - 1);
-
-        -- Find the user_id of the mentioned user
-        SELECT user_id INTO mentioned_user_id
-        FROM users
-        WHERE arroba = mentioned_arroba;
-
-        -- If a valid user was mentioned, create a notification
-        IF mentioned_user_id IS NOT NULL THEN
-            INSERT INTO notifications (user_id, type, post_id, actor_id, message)
-            VALUES (mentioned_user_id, 'mencao', NEW.post_id, NEW.user_id, 
-                    CONCAT('You were mentioned in a post by @', (SELECT arroba FROM users WHERE user_id = NEW.user_id)));
-        END IF;
-
-        -- Look for the next mention
-        SET mention_position = LOCATE('@', NEW.content, mention_end);
+    
+        -- Extract the hashtag
+        SET hashtag_text = SUBSTRING(NEW.content, hashtag_position + 1, hashtag_end - hashtag_position - 1);
+    
+        -- Insert or get the hashtag ID
+        INSERT IGNORE INTO hashtags (hashtag) VALUES (hashtag_text);
+        SELECT hashtag_id INTO hashtag_id FROM hashtags WHERE hashtag = hashtag_text;
+    
+        -- Link the hashtag to the post
+        INSERT INTO posts_hashtags (post_id, hashtag_id, hashtag) VALUES (NEW.post_id, hashtag_id, hashtag_text);
+    
+        -- Look for the next hashtag
+        SET hashtag_position = LOCATE('#', NEW.content, hashtag_end);
     END WHILE;
 END//
+
+DELIMETER ;
+
+-- Create table for hashtags
+CREATE TABLE hashtags (
+    hashtag_id INT PRIMARY KEY AUTO_INCREMENT,
+    hashtag VARCHAR(140) UNIQUE NOT NULL
+);
+
+-- Create table for the many-to-many relationship between posts and hashtags
+CREATE TABLE posts_hashtags (
+    post_id INT,
+    hashtag_id INT,
+    hashtag VARCHAR(140) NOT NULL,
+    PRIMARY KEY (post_id, hashtag_id),
+    FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE,
+    FOREIGN KEY (hashtag_id) REFERENCES hashtags(hashtag_id) ON DELETE CASCADE
+);
+-- Create index on hashtag column for faster searches
+CREATE INDEX idx_hashtag ON hashtags(hashtag);
 
 DELIMITER ;

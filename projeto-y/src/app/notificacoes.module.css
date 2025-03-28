@@ -3,7 +3,6 @@
   margin: 0 auto;
   padding: 20px;
   background-color: #f5f5f5;
-  border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: background-color 0.3s ease;
 }
@@ -12,6 +11,15 @@
   font-size: 24px;
   margin-bottom: 20px;
   text-align: center;
+}
+
+.darkcontainer {
+  background-color: #111;
+  color: white;
+}
+
+.darktitle {
+  color: white;
 }
 
 .clearbutton {
@@ -23,6 +31,7 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  font-weight: bold;
   font-size: 16px;
   margin-bottom: 20px;
   transition: background-color 0.3s ease;
@@ -75,4 +84,14 @@
   text-align: center;
   font-style: italic;
   color: #777;
+}
+
+.darkbutton {
+  background-color: #3abef9;
+  color: black;
+  font-weight: bold;
+}
+
+.darknotificationitem {
+  background-color: #222;
 }

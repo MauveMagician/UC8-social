@@ -7,6 +7,8 @@ const mysql = require("mysql2/promise");
 const { verifyPassword, hashPassword } = require("./src/lib/auth");
 const fs = require("fs");
 const path = require("path");
+const http = require("http");
+const socketIo = require("socket.io");
 
 const pfpUploadPath =
   process.env.PFP_UPLOAD_PATH || path.join(__dirname, "pfp");
@@ -76,6 +78,56 @@ app
   .prepare()
   .then(() => {
     const server = express();
+    const httpServer = http.createServer(server);
+    const io = socketIo(httpServer, {
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+        allowedHeaders: ["my-custom-header"],
+        credentials: true,
+      },
+    });
+
+    // Socket.IO connection handling
+    io.on("connection", (socket) => {
+      // ... (other socket event handlers)
+
+      socket.on("chat message", (msg) => {
+        // Broadcast the message to all clients
+        io.emit("chat message", msg);
+
+        // Check for mentions and send notifications
+        if (msg.mentions && msg.mentions.length > 0) {
+          msg.mentions.forEach((mentionedUser) => {
+            // Find the socket of the mentioned user
+            const mentionedSocket = Object.values(io.sockets.sockets).find(
+              (s) => s.username === mentionedUser
+            );
+
+            if (mentionedSocket) {
+              mentionedSocket.emit("mention", {
+                fromUser: msg.username,
+                message: msg.message,
+              });
+            }
+          });
+        }
+      });
+
+      // ... other socket event handlers
+    });
+
+    // Helper function to get socket ID for a username (you need to implement this)
+    function getUserSocketId(username) {
+      // This should return the socket ID for the given username
+      // You'll need to maintain a mapping of usernames to socket IDs
+    }
+
+    const PORT = process.env.PORT || 3000;
+    httpServer.listen(PORT, (err) => {
+      if (err) throw err;
+      console.log(`> Ready on http://localhost:${PORT}`); // You can remove or comment out this line
+    });
 
     // MySQL session store
     const sessionStore = new MySQLStore({
@@ -216,6 +268,63 @@ app
       }
     });
 
+    server.post("/api/data/post", async (req, res) => {
+      const { content } = req.body;
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      const user_id = await fetchIdBySession(req);
+
+      try {
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        // Insert the post
+        const [postResult] = await connection.execute(
+          "INSERT INTO posts (user_id, content, post_date) VALUES (?, ?, NOW())",
+          [user_id, content]
+        );
+        const post_id = postResult.insertId;
+
+        // Extract hashtags from the content
+        const hashtags = content.match(/#\w+/g) || [];
+
+        // Insert each hashtag and create association
+        for (const hashtag of hashtags) {
+          const hashtagText = hashtag.slice(1); // Remove the # symbol
+
+          // Insert hashtag if it doesn't exist
+          await connection.execute(
+            "INSERT IGNORE INTO hashtags (hashtag) VALUES (?)",
+            [hashtagText]
+          );
+
+          // Get the hashtag_id
+          const [hashtagRows] = await connection.execute(
+            "SELECT hashtag_id FROM hashtags WHERE hashtag = ?",
+            [hashtagText]
+          );
+          const hashtag_id = hashtagRows[0].hashtag_id;
+
+          // Create association in posts_hashtags
+          await connection.execute(
+            "INSERT INTO posts_hashtags (post_id, hashtag_id) VALUES (?, ?)",
+            [post_id, hashtag_id]
+          );
+        }
+
+        connection.end();
+        res.status(201).json({ message: "Post is successful" });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+
     server.post("/api/auth/login", async (req, res) => {
       const { email, senha } = req.body;
 
@@ -338,6 +447,16 @@ app
           "INSERT INTO posts (user_id, content, post_date) VALUES (?, ?,NOW())",
           [user_id, content]
         );
+        // Extract hashtags from the content
+        const hashtags = content.match(/#\w+/g) || [];
+
+        // Insert each hashtag separately
+        for (const hashtag of hashtags) {
+          await connection.execute(
+            "INSERT INTO hashtags (hashtag) VALUES (?)",
+            [hashtag]
+          );
+        }
         connection.end();
         res.status(201).json({ message: "Post is successful" });
       } catch (error) {
@@ -964,11 +1083,147 @@ app
         res.status(500).json({ message: "Internal server error" });
       }
     });
+
+    server.get("/api/data/posts_screen", async (req, res) => {
+      const page = Math.max(1, parseInt(req.query.page) || 1);
+      const postsPerPage = 10;
+      const hashtag = req.query.hashtag;
+
+      let connection;
+      try {
+        connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        let countQuery = "SELECT COUNT(*) AS total FROM posts p";
+        let postsQuery = `
+          SELECT p.*, u.nome AS username, u.arroba 
+          FROM posts p 
+          JOIN users u ON p.user_id = u.user_id
+        `;
+
+        const queryParams = [];
+
+        if (hashtag) {
+          countQuery += " WHERE p.content LIKE ?";
+          postsQuery += " WHERE p.content LIKE ?";
+          queryParams.push(`%#${hashtag}%`);
+        }
+
+        const [totalResult] = await connection.execute(countQuery, queryParams);
+        const totalPosts = totalResult[0].total;
+
+        const totalPages = Math.ceil(totalPosts / postsPerPage);
+        const offset = (page - 1) * postsPerPage;
+
+        postsQuery += " ORDER BY p.post_date DESC LIMIT ? OFFSET ?";
+        queryParams.push(postsPerPage, offset);
+
+        // Use query instead of execute for the posts query
+        const [posts] = await connection.query(postsQuery, queryParams);
+
+        res.status(200).json({
+          posts,
+          currentPage: page,
+          totalPages,
+          postsPerPage,
+        });
+      } catch (error) {
+        console.error("Error in /api/data/posts_screen:", error);
+        res
+          .status(500)
+          .json({ message: "Internal server error", error: error.message });
+      } finally {
+        if (connection) {
+          try {
+            await connection.end();
+          } catch (err) {
+            console.error("Error closing database connection:", err);
+          }
+        }
+      }
+    });
+
+    server.delete("/api/data/clear_notifications", async (req, res) => {
+      //Rota autenticada que limpa todas as notificações do usuário logado no back-end
+      if (!req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      try {
+        // Connect to the database
+        const connection = await mysql.createConnection({
+          host: process.env.DB_HOST,
+          user: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+        });
+
+        const user_id = await fetchIdBySession(req);
+
+        // Delete all notifications for the authenticated user
+        await connection.execute(
+          "DELETE FROM notifications WHERE user_id = ?",
+          [user_id]
+        );
+
+        connection.end();
+
+        res
+          .status(200)
+          .json({ message: "All notifications cleared successfully" });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+      }
+    });
+    server.delete(
+      "/api/data/notification/:notification_id",
+      async (req, res) => {
+        //Rota autenticada que limpa uma notificação específica do usuário logado no back-end, passando o id da notificação como um parâmetro
+        if (!req.session.user) {
+          return res.status(401).json({ message: "Not authenticated" });
+        }
+
+        const user_id = await fetchIdBySession(req);
+        const { notification_id } = req.params;
+
+        if (!notification_id) {
+          return res
+            .status(400)
+            .json({ message: "Notification ID is required" });
+        }
+
+        try {
+          const connection = await mysql.createConnection({
+            host: process.env.DB_HOST,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_NAME,
+          });
+
+          const [result] = await connection.execute(
+            "DELETE FROM notifications WHERE notification_id = ? AND user_id = ?",
+            [notification_id, user_id]
+          );
+          connection.end();
+          res
+            .status(200)
+            .json({ message: "Notification deleted successfully" });
+        } catch (error) {
+          console.error(error);
+          res.status(500).json({ message: "Internal server error" });
+        }
+      }
+    );
     // Handle all other routes with Next.js
     server.all("*", (req, res) => {
       return handle(req, res);
     });
-    server.listen(3000, (err) => {
+    server.listen(3001, (err) => {
       if (err) throw err;
       console.log("> Ready on http://localhost:3000");
     });
